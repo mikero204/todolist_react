@@ -30,37 +30,32 @@ export const todoReducer = (
         editable: false,
       };
       newState.todolist.push(todo);
-      return { todolist: [...newState.todolist] };
+      return { ...newState, todolist: [...newState.todolist] };
     case UPDATE_TODO:
-      for (let i = 0; i < newState.todolist.length; i++) {
-        if (newState.todolist[i].id === action.payload.id) {
-          newState.todolist[i].id = action.payload.id
-            ? action.payload.id
-            : newState.todolist[i].id;
-          newState.todolist[i].title = action.payload.title
-            ? action.payload.title
-            : newState.todolist[i].title;
-          newState.todolist[i].status = action.payload.status
-            ? action.payload.status
-            : newState.todolist[i].status;
-          newState.todolist[i].editable =
-            action.payload.editable !== undefined
-              ? action.payload.editable
-              : newState.todolist[i].editable;
-        }
+      const update_ele = newState.todolist.find(
+        (ele) => ele.id === action.payload.id
+      );
+      if (update_ele) {
+        update_ele.status =
+          action.payload.status === undefined
+            ? update_ele.status
+            : action.payload.status;
+        update_ele.title =
+          action.payload.title === undefined
+            ? update_ele.title
+            : action.payload.title;
+        update_ele.editable =
+          action.payload.editable === undefined
+            ? update_ele.editable
+            : action.payload.editable;
       }
-      return newState;
-    case "UpdateT":
-      newState.todolist.forEach((ele) => {
-        if (ele.id === action.payload.id) {
-          ele.title = action.payload.title;
-          ele.editable = action.payload.editable;
-        }
-      });
-      return newState;
+      return { ...newState, todolist: [...newState.todolist] };
     case DELETE_TODO:
+      const idx = newState.todolist.findIndex(
+        (ele) => ele.id === action.payload.id
+      );
+      newState.todolist.splice(idx, 1);
       return newState;
-
     default:
       return newState;
   }

@@ -1,7 +1,6 @@
-import { type } from "os";
 import { useContext, useState } from "react";
 import { todoContext } from "./context/todoContext";
-import { ADD_TODO, UPDATE_TODO } from "./reducer/constants";
+import { UPDATE_TODO, DELETE_TODO } from "./reducer/constants";
 export default function TodoItem() {
   let { todolist, dispatch } = useContext(todoContext);
   return (
@@ -12,17 +11,25 @@ export default function TodoItem() {
             return <Todosub key={ele.id} id={ele.id} title={ele.title} />;
           } else {
             return (
-              <li
-                onDoubleClick={() => {
-                  dispatch({
-                    type: UPDATE_TODO,
-                    payload: { id: ele.id, editable: true },
-                  });
-                }}
-                key={ele.id}
-              >
-                <span>{ele.title}</span>
-                <button>x</button>
+              <li key={ele.id}>
+                <span
+                  onDoubleClick={() => {
+                    dispatch({
+                      type: UPDATE_TODO,
+                      payload: { id: ele.id, editable: true },
+                    });
+                  }}
+                >
+                  {ele.title}
+                </span>
+                <button
+                  onClick={() => {
+                    console.log(123);
+                    dispatch({ type: DELETE_TODO, payload: { id: ele.id } });
+                  }}
+                >
+                  x
+                </button>
               </li>
             );
           }
@@ -36,10 +43,10 @@ function Todosub({ title, id }: any) {
   let { dispatch } = useContext(todoContext);
   const [title1, setTitle1] = useState(title);
   return (
-    <li key={id}>
+    <li>
       <input
         type="text"
-        value={title1}
+        defaultValue={title1}
         onChange={(e) => {
           setTitle1(e.target.value);
         }}

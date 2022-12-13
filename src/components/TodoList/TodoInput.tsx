@@ -15,6 +15,7 @@ export default function TodoInput() {
       />
       <button
         onClick={() => {
+          setTitle("");
           dispatch({ type: ADD_TODO, payload: { title: title } });
         }}
       >

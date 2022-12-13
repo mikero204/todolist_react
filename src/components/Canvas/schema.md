@@ -1,0 +1,14 @@
+{
+id:string,
+name:stirng,
+zindex:number,
+rotate:number,
+img:string,
+active:boolean,
+x:number,
+y:number,
+width:number,
+height:number,
+color:string,
+lock:boolean
+}
