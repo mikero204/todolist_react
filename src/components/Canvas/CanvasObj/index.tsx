@@ -1,20 +1,22 @@
-import { useDraggable, DraggableObj } from "../hooks/useDraggable";
-import { useCustomDrag } from "../hooks/useCustomDrag";
+import { useDraggable } from "../hooks/useDraggable";
 import stlyles from "./index.module.scss";
 import { useState } from "react";
+import { useCanvasContext } from "../hooks/useCanvasContext";
+import {
+  ADD_CANVAS_OBJ,
+  UPDATE_CANVAS_OBJ,
+  DELETE_CANVAS_OBJ,
+  CHANGE_ACTIVE,
+} from "../Constants";
 
-type prop = {
-  ele: DraggableObj;
-  changeActive: Function;
-};
-function CanvasObj(props: prop) {
-  const draggable = useDraggable(props.ele);
-  const customdraggable = useCustomDrag();
+function CanvasObj({ ele }: any) {
+  const draggable = useDraggable(ele);
+  const [state, dispatch] = useCanvasContext();
   const [showborder, setBorder] = useState(false);
+
   const activeObj = (e: any) => {
     e.preventDefault();
-    props.changeActive(props.ele.id);
-    draggable.enable();
+    dispatch({ type: CHANGE_ACTIVE, payload: ele });
   };
   const showBorder = () => {
     setBorder(true);
@@ -22,24 +24,60 @@ function CanvasObj(props: prop) {
   const hideBorder = () => {
     setBorder(false);
   };
+  const {
+    id,
+    name,
+    x,
+    y,
+    width,
+    height,
+    zindex,
+    rotate,
+    img,
+    active,
+    lock,
+    color,
+  } = ele;
+
+  let style: any = {
+    position: "absolute",
+    transform: `translate3D(${x}px, ${y}px, 0) rotate(${rotate}deg)`,
+    width: width + "px",
+    height: height + "px",
+    zindex,
+  };
+  if (showborder && !active) {
+    style.border = "2px solid #8b3dff";
+  }
+  if (active) {
+    style.border = "2px solid #8b3dff";
+  }
+
   return (
     <div
       ref={draggable.ref}
-      style={Object.assign(
-        draggable.style,
-        showborder ? { border: "1px solid black" } : ""
-      )}
+      style={style}
       onClick={activeObj}
       onTouchEnd={activeObj}
       onMouseMove={showBorder}
       onMouseOut={hideBorder}
     >
-      {props.ele.active ? <ObjOutlineBox style={draggable.style} /> : null}
+      {ele.active ? (
+        <ObjOutlineBox
+          style={{
+            position: "absolute",
+            transform: `translate3D(${x}px, ${y}px, 0)`,
+            width: width,
+            height: height,
+            zindex,
+          }}
+        />
+      ) : null}
 
-      <img className={stlyles.img_drag} src={draggable.img} />
-      <div ref={customdraggable.ref} className={stlyles.rotationhandle}>
+      <img className={stlyles.img_drag} src={ele.img} />
+      {/* <div ref={customdraggable.ref} className={stlyles.rotationhandle}>
         旋轉
-      </div>
+      </div> */}
     </div>
   );
 }
@@ -47,63 +85,47 @@ function CanvasObj(props: prop) {
 export default CanvasObj;
 
 function ObjOutlineBox(props: any) {
-  const clac_pos = (type: any, param: any) => {
-    let stlye: any = {};
-    param.width = param.width.replace("px", "");
-    param.height = param.height.replace("px", "");
+  const style = props.style;
 
+  const clac_pos = (type: any, param: any) => {
+    let style: any = {};
     switch (type) {
       case "top_l":
-        stlye.position = "absolute";
-        stlye.top = `-10px`;
-        stlye.left = `-10px`;
+        style.position = "absolute";
+        style.top = `-10px`;
+        style.left = `-10px`;
         break;
       case "top_r":
-        stlye.position = "absolute";
-        stlye.top = "-10px";
-        stlye.left = param.width - 10 + "px";
+        style.position = "absolute";
+        style.top = "-10px";
+        style.left = param.width - 10 + "px";
         break;
       case "bottom_l":
-        stlye.position = "absolute";
-        stlye.top = param.height - 10 + "px";
-        stlye.left = "-10" + "px";
+        style.position = "absolute";
+        style.top = param.height - 10 + "px";
+        style.left = "-10" + "px";
         break;
       case "bottom_r":
-        stlye.position = "absolute";
-        stlye.top = param.height - 10 + "px";
-        stlye.left = param.width - 10 + "px";
-        stlye.zIndex = 99999;
+        style.position = "absolute";
+        style.top = param.height - 10 + "px";
+        style.left = param.width - 10 + "px";
         break;
     }
-    return stlye;
+    return style;
   };
-  const style = props.style;
-  delete style.border;
-  style.border = "2px solid #8b3dff";
+
   return (
     <div
       style={{
         position: "absolute",
-        width: props.style.width,
-        height: props.style.height,
+        width: style.width,
+        height: style.height,
       }}
     >
-      <div
-        className={stlyles.corner}
-        style={clac_pos("top_l", props.style)}
-      ></div>
-      <div
-        className={stlyles.corner}
-        style={clac_pos("top_r", props.style)}
-      ></div>
-      <div
-        className={stlyles.corner}
-        style={clac_pos("bottom_l", props.style)}
-      ></div>
-      <div
-        className={stlyles.corner}
-        style={clac_pos("bottom_r", props.style)}
-      ></div>
+      <div className={stlyles.corner} style={clac_pos("top_l", style)}></div>
+      <div className={stlyles.corner} style={clac_pos("top_r", style)}></div>
+      <div className={stlyles.corner} style={clac_pos("bottom_l", style)}></div>
+      <div className={stlyles.corner} style={clac_pos("bottom_r", style)}></div>
     </div>
   );
 }

@@ -1,53 +1,14 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import interact from "interactjs";
-
-export type DraggableObj = {
-  id: string;
-  name: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  zindex: number;
-  rotate: number;
-  img: string;
-  active: boolean;
-  mouse_event_active: boolean;
-  color: string;
-  lock: boolean;
-};
-
-export const useDraggable = (position: DraggableObj) => {
-  const [elementPosition, setElementPosition] = React.useState<DraggableObj>({
-    ...position,
-  });
-  const [border, setBorder] = useState(false);
-  const [isEnabled, setIsEnabled] = React.useState<boolean>(false);
-
-  const interactiveRef = React.useRef(null);
-  useEffect(() => {
-    if (position.active) {
-      setIsEnabled(true);
-    } else {
-      setIsEnabled(false);
-    }
-  }, [position.active]);
-
-  let {
-    id,
-    name,
-    x,
-    y,
-    width,
-    height,
-    zindex,
-    rotate,
-    img,
-    active,
-    color,
-    lock,
-    mouse_event_active,
-  } = elementPosition;
+import { useCanvasContext } from "../hooks/useCanvasContext";
+import {
+  ADD_CANVAS_OBJ,
+  UPDATE_CANVAS_OBJ,
+  DELETE_CANVAS_OBJ,
+} from "../Constants";
+export const useDraggable = (ele: any) => {
+  const [state, dispatch] = useCanvasContext();
+  const interactiveRef = useRef(null);
 
   const enable = () => {
     interact(interactiveRef.current as unknown as HTMLElement)
@@ -80,52 +41,37 @@ export const useDraggable = (position: DraggableObj) => {
         event.preventDefault();
       })
       .on("mousemove", (event) => {
-        setBorder(true);
+        // setBorder(true);
       })
       .on("mouseleave", (event) => {
-        setBorder(false);
+        // setBorder(false);
       })
       .on("resizemove", (event) => {
-        var target = event.target;
-
-        // update the element's style
-        target.style.width = event.rect.width + "px";
-        target.style.height = event.rect.height + "px";
-        width = target.style.width;
-        height = target.style.height;
-        setElementPosition({
-          id,
-          name,
-          x,
-          y,
-          width: event.rect.width,
-          height: event.rect.height,
-          zindex,
-          rotate,
-          img,
-          active,
-          color,
-          lock,
-          mouse_event_active,
+        const width = event.rect.width.toString();
+        const height = event.rect.height.toString();
+        ele.width = width;
+        ele.height = height;
+        dispatch({
+          type: UPDATE_CANVAS_OBJ,
+          payload: {
+            ...ele,
+            width: width,
+            height: height,
+          },
         });
       })
       .on("dragmove", (event) => {
-        x += event.dx;
-        y += event.dy;
-        setElementPosition({
-          id,
-          name,
-          x,
-          y,
-          width,
-          height,
-          zindex,
-          rotate,
-          img,
-          active,
-          color,
-          lock,
-          mouse_event_active,
+        ele.x += event.dx;
+        ele.y += event.dy;
+        dispatch({
+          type: UPDATE_CANVAS_OBJ,
+          payload: {
+            id: ele.id,
+            x: ele.x,
+            y: ele.y,
+            width: ele.width,
+            height: ele.height,
+          },
         });
       });
   };
@@ -134,29 +80,16 @@ export const useDraggable = (position: DraggableObj) => {
     interact(interactiveRef.current as unknown as HTMLElement).unset();
   };
 
-  React.useEffect(() => {
-    if (isEnabled) {
+  useEffect(() => {
+    if (ele.active) {
       enable();
     } else {
       disable();
     }
     return disable;
-  }, [isEnabled]);
+  }, [ele.active]);
 
   return {
     ref: interactiveRef,
-    style: {
-      transform: `translate3D(${elementPosition.x}px, ${elementPosition.y}px, 0) rotate(${elementPosition.rotate}deg)`,
-      width: `${elementPosition.width}px`,
-      height: `${elementPosition.height}px`,
-      position: "absolute" as React.CSSProperties["position"],
-      touchAction: "none",
-      border: border ? "2px solid #8b3dff" : "",
-    },
-    img: elementPosition.img,
-    position: elementPosition,
-    isEnabled,
-    enable: () => setIsEnabled(true),
-    disable: () => setIsEnabled(false),
   };
 };

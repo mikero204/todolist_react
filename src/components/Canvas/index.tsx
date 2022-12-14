@@ -1,15 +1,16 @@
-import React, { useState } from "react";
+import { useState, useReducer } from "react";
 import CanvasObj from "./CanvasObj";
-import { DraggableObj } from "./hooks/useDraggable";
-
+import { CanvasContext } from "./context/CanvasContext";
+import { CanvasReducer, canvasStateType } from "./context/CanvasReducer";
+import uuid from "react-uuid";
 function Canvas() {
-  const obj: DraggableObj = {
+  const obj = {
     id: "string1",
     name: "string1",
     x: 50,
     y: 50,
-    width: 200,
-    height: 200,
+    width: "200",
+    height: "200",
     zindex: 1,
     rotate: 0,
     img: "https://video-public.canva.com/VAFQ9X_oK8g/v/b887464761.gif",
@@ -18,46 +19,44 @@ function Canvas() {
     lock: false,
     mouse_event_active: false,
   };
-  const obj2: DraggableObj = {
-    id: "string2",
-    name: "string2",
-    x: 150,
-    y: 350,
-    width: 200,
-    height: 200,
+  const obj1 = {
+    id: uuid(),
+    name: uuid(),
+    x: 250,
+    y: 250,
+    width: "200",
+    height: "200",
     zindex: 1,
-    rotate: 0,
+    rotate: 90,
     img: "https://video-public.canva.com/VAFQ9X_oK8g/v/b887464761.gif",
     active: false,
     color: "red",
     lock: false,
     mouse_event_active: false,
   };
-  const [data, setData] = useState([{ ...obj }]);
-  const changeActive = (id: any) => {
-    const newdata = JSON.parse(JSON.stringify(data));
-    newdata.forEach((ele: any) => {
-      if (ele.id === id) {
-        ele.active = true;
-      } else {
-        ele.active = false;
-      }
-      setData(newdata);
-    });
+  const initState: canvasStateType = {
+    canvasObj_list: [obj, obj1],
   };
+
+  const [state, dispatch] = useReducer(CanvasReducer, initState);
+
   return (
-    <div
-      style={{
-        position: "relative",
-        width: "1000px",
-        height: "1000px",
-        touchAction: "none",
-      }}
+    <CanvasContext.Provider
+      value={{ state: state.canvasObj_list, dispatch: dispatch }}
     >
-      {data.map((ele, index) => {
-        return <CanvasObj key={index} changeActive={changeActive} ele={ele} />;
-      })}
-    </div>
+      <div
+        style={{
+          position: "relative",
+          width: "1000px",
+          height: "1000px",
+          touchAction: "none",
+        }}
+      >
+        {state.canvasObj_list.map((ele) => {
+          return <CanvasObj key={ele.id} ele={ele} />;
+        })}
+      </div>
+    </CanvasContext.Provider>
   );
 }
 
