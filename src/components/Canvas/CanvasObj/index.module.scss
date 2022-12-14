@@ -1,0 +1,39 @@
+.dragobj {
+  border: 1px solid red;
+}
+
+.img_drag {
+  width: 100%;
+  height: 100%;
+}
+
+.outlinebox {
+  background-color: red;
+  position: relative;
+}
+.corner {
+  width: 16px;
+  height: 16px;
+  background-color: white;
+  border: 0.5px solid black;
+  border-radius: 30px;
+  &:hover {
+    background-color: #8b3dff;
+  }
+}
+
+.rotationhandle {
+  padding: 3px 4px;
+  display: table;
+  position: absolute;
+  left: 50%;
+  right: 50%;
+  bottom: -85px;
+  background-color: #ff1661;
+  border-radius: 10rem;
+  line-height: 1;
+  text-align: center;
+  font-weight: bold;
+  color: #fff;
+  cursor: move;
+}
