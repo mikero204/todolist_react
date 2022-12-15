@@ -26,12 +26,17 @@ export const CanvasReducer = (
       return newState;
     case UPDATE_CANVAS_OBJ: {
       let obj = action.payload;
+      // console.log(obj);
+      // console.log(newState);
       newState.canvasObj_list.forEach((element) => {
         if (element.id === obj.id) {
           element.x = obj.x;
           element.y = obj.y;
           element.width = obj.width;
           element.height = obj.height;
+          if (obj.rotate) {
+            element.rotate = obj.rotate;
+          }
         }
       });
       return newState;

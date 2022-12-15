@@ -8,6 +8,7 @@ import {
   DELETE_CANVAS_OBJ,
   CHANGE_ACTIVE,
 } from "../Constants";
+import { useCustomDrag } from "../hooks/useCustomDrag";
 
 function CanvasObj({ ele }: any) {
   const draggable = useDraggable(ele);
@@ -38,10 +39,9 @@ function CanvasObj({ ele }: any) {
     lock,
     color,
   } = ele;
-
   let style: any = {
     position: "absolute",
-    transform: `translate3D(${x}px, ${y}px, 0) rotate(${rotate}deg)`,
+    transform: `translate(${x}px, ${y}px) rotate(${rotate}rad)`,
     width: width + "px",
     height: height + "px",
     zindex,
@@ -52,7 +52,6 @@ function CanvasObj({ ele }: any) {
   if (active) {
     style.border = "2px solid #8b3dff";
   }
-
   return (
     <div
       ref={draggable.ref}
@@ -61,28 +60,41 @@ function CanvasObj({ ele }: any) {
       onTouchEnd={activeObj}
       onMouseMove={showBorder}
       onMouseOut={hideBorder}
+      data-x={ele.x}
+      data-y={ele.y}
+      data-angle={ele.rotate}
+      data-id={ele.id}
     >
       {ele.active ? (
-        <ObjOutlineBox
-          style={{
-            position: "absolute",
-            transform: `translate3D(${x}px, ${y}px, 0)`,
-            width: width,
-            height: height,
-            zindex,
-          }}
-        />
+        <>
+          <ObjOutlineBox
+            style={{
+              position: "absolute",
+              transform: `translate(${x}px, ${y}px)`,
+              width: width,
+              height: height,
+              zindex,
+            }}
+          />
+          <RotateButton />
+        </>
       ) : null}
 
       <img className={stlyles.img_drag} src={ele.img} />
-      {/* <div ref={customdraggable.ref} className={stlyles.rotationhandle}>
-        旋轉
-      </div> */}
     </div>
   );
 }
 
 export default CanvasObj;
+
+function RotateButton() {
+  const rotatedrag = useCustomDrag();
+  return (
+    <div ref={rotatedrag.ref} className={stlyles.rotationhandle}>
+      旋轉
+    </div>
+  );
+}
 
 function ObjOutlineBox(props: any) {
   const style = props.style;

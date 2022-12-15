@@ -5,12 +5,12 @@ import { CanvasReducer, canvasStateType } from "./context/CanvasReducer";
 import uuid from "react-uuid";
 function Canvas() {
   const obj = {
-    id: "string1",
-    name: "string1",
+    id: uuid(),
+    name: uuid(),
     x: 50,
     y: 50,
-    width: "200",
-    height: "200",
+    width: "217",
+    height: "217",
     zindex: 1,
     rotate: 0,
     img: "https://video-public.canva.com/VAFQ9X_oK8g/v/b887464761.gif",
@@ -27,7 +27,7 @@ function Canvas() {
     width: "200",
     height: "200",
     zindex: 1,
-    rotate: 90,
+    rotate: 0,
     img: "https://video-public.canva.com/VAFQ9X_oK8g/v/b887464761.gif",
     active: false,
     color: "red",
@@ -35,7 +35,7 @@ function Canvas() {
     mouse_event_active: false,
   };
   const initState: canvasStateType = {
-    canvasObj_list: [obj, obj1],
+    canvasObj_list: [obj1],
   };
 
   const [state, dispatch] = useReducer(CanvasReducer, initState);
