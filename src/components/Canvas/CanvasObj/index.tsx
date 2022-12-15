@@ -1,6 +1,6 @@
 import { useDraggable } from "../hooks/useDraggable";
 import stlyles from "./index.module.scss";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCanvasContext } from "../hooks/useCanvasContext";
 import {
   ADD_CANVAS_OBJ,
@@ -14,7 +14,11 @@ function CanvasObj({ ele }: any) {
   const draggable = useDraggable(ele);
   const [state, dispatch] = useCanvasContext();
   const [showborder, setBorder] = useState(false);
-
+  useEffect(() => {
+    return () => {
+      draggable.disable();
+    };
+  }, []);
   const activeObj = (e: any) => {
     e.preventDefault();
     dispatch({ type: CHANGE_ACTIVE, payload: ele });
@@ -38,18 +42,17 @@ function CanvasObj({ ele }: any) {
     active,
     lock,
     color,
-  } = ele;
+  } = draggable.res_prop;
   let style: any = {
     position: "absolute",
     transform: `translate(${x}px, ${y}px) rotate(${rotate}rad)`,
     width: width + "px",
     height: height + "px",
-    zindex,
   };
   if (showborder && !active) {
     style.border = "2px solid #8b3dff";
   }
-  if (active) {
+  if (ele.active) {
     style.border = "2px solid #8b3dff";
   }
   return (
@@ -60,10 +63,10 @@ function CanvasObj({ ele }: any) {
       onTouchEnd={activeObj}
       onMouseMove={showBorder}
       onMouseOut={hideBorder}
-      data-x={ele.x}
-      data-y={ele.y}
-      data-angle={ele.rotate}
-      data-id={ele.id}
+      data-x={x}
+      data-y={y}
+      data-angle={rotate}
+      data-id={id}
     >
       {ele.active ? (
         <>
@@ -89,6 +92,11 @@ export default CanvasObj;
 
 function RotateButton() {
   const rotatedrag = useCustomDrag();
+  useEffect(() => {
+    return () => {
+      rotatedrag.disable();
+    };
+  });
   return (
     <div ref={rotatedrag.ref} className={stlyles.rotationhandle}>
       旋轉

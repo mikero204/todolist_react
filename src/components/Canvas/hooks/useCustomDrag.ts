@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from "react";
 import interact from "interactjs";
-import { useCanvasContext } from "../hooks/useCanvasContext";
-import {
-  ADD_CANVAS_OBJ,
-  UPDATE_CANVAS_OBJ,
-  DELETE_CANVAS_OBJ,
-} from "../Constants";
+
 export const useCustomDrag = () => {
-  const [state, dispatch] = useCanvasContext();
   const interactiveRef = React.useRef(null);
+  const [isEnabled, setIsEnabled] = useState(true);
 
   const enable = () => {
     interact(interactiveRef.current as unknown as HTMLElement).draggable({
       onstart: function (event) {
         const element = event.target.parentElement;
-
         const rect = element.getBoundingClientRect();
 
         // store the center as the element has css `transform-origin: center center`
@@ -26,36 +20,36 @@ export const useCustomDrag = () => {
       onmove: function (event) {
         var element = event.target.parentElement;
         var angle = getDragAngle(event);
-
-        const findele = state.find((ele: any) => {
-          if (ele.id === element.dataset.id) {
-            return ele;
-          }
-        });
-        // console.log(angle);
-        dispatch({
-          type: UPDATE_CANVAS_OBJ,
-          payload: {
-            ...findele,
-            rotate: angle,
-          },
-        });
+        const x = element.dataset.x;
+        const y = element.dataset.y;
+        element.style.transform = `translate(${x}px, ${y}px) rotate(${angle}rad)`;
       },
       onend: function (event) {
         var element = event.target.parentElement;
-
         // save the angle on dragend
         element.dataset.angle = getDragAngle(event);
       },
     });
   };
+  const disable = () => {
+    if (interactiveRef.current) {
+      interact(interactiveRef.current as unknown as HTMLElement).unset();
+    }
+  };
 
-  React.useEffect(() => {
-    enable();
-  });
+  useEffect(() => {
+    if (isEnabled) {
+      enable();
+    } else {
+      disable();
+    }
+    return disable;
+  }, [isEnabled]);
 
   return {
     ref: interactiveRef,
+    enable: enable,
+    disable: disable,
   };
 };
 function getDragAngle(event: any) {

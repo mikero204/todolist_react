@@ -45,6 +45,7 @@ export const CanvasReducer = (
       return newState;
     case CHANGE_ACTIVE: {
       let obj = action.payload;
+
       newState.canvasObj_list.forEach((element) => {
         if (element.id !== obj.id) {
           element.active = false;
