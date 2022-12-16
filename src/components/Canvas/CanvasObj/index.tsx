@@ -141,6 +141,7 @@ function ObjOutlineBox(props: any) {
   const test = (e: any) => {
     pos.cor_x = e.pageX;
     pos.cor_y = e.pageY;
+    console.log("1");
     window.addEventListener("mousemove", check_move);
     window.addEventListener("mouseup", check_up);
   };
