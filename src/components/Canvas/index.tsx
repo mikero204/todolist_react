@@ -35,30 +35,15 @@ function Canvas() {
     mouse_event_active: false,
   };
   const initState: canvasStateType = {
-    canvasObj_list: [obj1],
+    canvasObj_list: [obj, obj1],
   };
-  const ref = useRef<any>(null);
   const [state, dispatch] = useReducer(CanvasReducer, initState);
-  const canvaMove = (e: any) => {
-    if (ref.current) {
-      const target_dataset = ref.current.dataset;
-      target_dataset.x = e.pageX;
-      target_dataset.y = e.pageY;
-    }
-  };
-  const canvaUp = (e: any) => {
-    if (ref.current) {
-      console.log("up");
-    }
-  };
+
   return (
     <CanvasContext.Provider
       value={{ state: state.canvasObj_list, dispatch: dispatch }}
     >
       <div
-        ref={ref}
-        // onMouseMove={canvaMove}
-        // onMouseUp={canvaUp}
         style={{
           position: "relative",
           width: "1000px",

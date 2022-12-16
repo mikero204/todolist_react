@@ -100,8 +100,6 @@ function RotateButton(ele: any) {
 
 function ObjOutlineBox(props: any) {
   const style = props.style;
-
-  let pos: any = {};
   const clac_pos = (type: any, param: any) => {
     let style: any = {};
     switch (type) {
@@ -129,22 +127,6 @@ function ObjOutlineBox(props: any) {
     return style;
   };
 
-  const check_move = (e: any) => {
-    pos.mouse_X = e.x;
-    pos.mouse_Y = e.y;
-  };
-  const check_up = (e: any) => {
-    console.log(pos);
-    window.removeEventListener("mousemove", check_move);
-    window.removeEventListener("mouseup", check_up);
-  };
-  const test = (e: any) => {
-    pos.cor_x = e.pageX;
-    pos.cor_y = e.pageY;
-    console.log("1");
-    window.addEventListener("mousemove", check_move);
-    window.addEventListener("mouseup", check_up);
-  };
   return (
     <div
       style={{
@@ -154,17 +136,54 @@ function ObjOutlineBox(props: any) {
         transform: style.transform,
       }}
     >
-      <div
-        onTouchStart={test}
-        onTouchMove={test}
-        onTouchEnd={test}
-        onMouseDown={test}
-        className={stlyles.corner}
-        style={clac_pos("top_l", style)}
-      ></div>
-      <div className={stlyles.corner} style={clac_pos("top_r", style)}></div>
-      <div className={stlyles.corner} style={clac_pos("bottom_l", style)}></div>
-      <div className={stlyles.corner} style={clac_pos("bottom_r", style)}></div>
+      <CornerPoint type="top_l" style={clac_pos("top_l", style)}></CornerPoint>
+      <CornerPoint type="top_r" style={clac_pos("top_r", style)}></CornerPoint>
+      <CornerPoint
+        type="bottom_l"
+        style={clac_pos("bottom_l", style)}
+      ></CornerPoint>
+      <CornerPoint
+        type="bottom_r"
+        style={clac_pos("bottom_r", style)}
+      ></CornerPoint>
     </div>
+  );
+}
+
+function CornerPoint({ type, style }: any) {
+  useEffect(() => {
+    return () => {
+      console.log("clear corner event");
+      window.removeEventListener("mousemove", check_move);
+      window.removeEventListener("mouseup", check_up);
+    };
+  }, []);
+  const check_move = (e: any) => {
+    pos.mouse_X = e.x;
+    pos.mouse_Y = e.y;
+  };
+  const check_up = (e: any) => {
+    console.log(pos);
+    window.removeEventListener("mousemove", check_move);
+    window.removeEventListener("mouseup", check_up);
+  };
+
+  let pos: any = {};
+  const test = (e: any) => {
+    pos.cor_x = e.pageX;
+    pos.cor_y = e.pageY;
+    pos.type = type;
+    window.addEventListener("mousemove", check_move);
+    window.addEventListener("mouseup", check_up);
+  };
+  return (
+    <div
+      // onTouchStart={test}
+      // onTouchMove={test}
+      // onTouchEnd={test}
+      onMouseDown={test}
+      className={stlyles.corner}
+      style={style}
+    ></div>
   );
 }
