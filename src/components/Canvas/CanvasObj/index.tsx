@@ -2,15 +2,11 @@ import { useDraggable } from "../hooks/useDraggable";
 import stlyles from "./index.module.scss";
 import { useEffect, useState } from "react";
 import { useCanvasContext } from "../hooks/useCanvasContext";
-import {
-  ADD_CANVAS_OBJ,
-  UPDATE_CANVAS_OBJ,
-  DELETE_CANVAS_OBJ,
-  CHANGE_ACTIVE,
-} from "../Constants";
+import { CHANGE_ACTIVE } from "../Constants";
 import { useCustomDrag } from "../hooks/useCustomDrag";
 
 function CanvasObj({ ele }: any) {
+  // console.log(ele);
   const draggable = useDraggable(ele);
   const [state, dispatch] = useCanvasContext();
   const [showborder, setBorder] = useState(false);
@@ -23,12 +19,7 @@ function CanvasObj({ ele }: any) {
     e.preventDefault();
     dispatch({ type: CHANGE_ACTIVE, payload: ele });
   };
-  const showBorder = () => {
-    setBorder(true);
-  };
-  const hideBorder = () => {
-    setBorder(false);
-  };
+
   const {
     id,
     name,
@@ -42,7 +33,7 @@ function CanvasObj({ ele }: any) {
     active,
     lock,
     color,
-  } = draggable.res_prop;
+  } = ele;
   let style: any = {
     position: "absolute",
     transform: `translate(${x}px, ${y}px) rotate(${rotate}rad)`,
@@ -56,18 +47,19 @@ function CanvasObj({ ele }: any) {
     style.border = "2px solid #8b3dff";
   }
   return (
-    <div
-      ref={draggable.ref}
-      style={style}
-      onClick={activeObj}
-      onTouchEnd={activeObj}
-      onMouseMove={showBorder}
-      onMouseOut={hideBorder}
-      data-x={x}
-      data-y={y}
-      data-angle={rotate}
-      data-id={id}
-    >
+    <>
+      <div
+        ref={draggable.ref}
+        style={style}
+        onClick={activeObj}
+        onTouchEnd={activeObj}
+        onMouseMove={() => setBorder(true)}
+        onMouseOut={() => setBorder(false)}
+        // data-angle={rotate}
+        data-id={id}
+      >
+        <img className={stlyles.img_drag} src={ele.img} />
+      </div>
       {ele.active ? (
         <>
           <ObjOutlineBox
@@ -79,26 +71,28 @@ function CanvasObj({ ele }: any) {
               zindex,
             }}
           />
-          <RotateButton />
+          <RotateButton ele={ele} />
         </>
       ) : null}
-
-      <img className={stlyles.img_drag} src={ele.img} />
-    </div>
+    </>
   );
 }
 
 export default CanvasObj;
 
-function RotateButton() {
-  const rotatedrag = useCustomDrag();
+function RotateButton(ele: any) {
+  const rotatedrag = useCustomDrag(ele);
   useEffect(() => {
     return () => {
       rotatedrag.disable();
     };
-  });
+  }, []);
   return (
-    <div ref={rotatedrag.ref} className={stlyles.rotationhandle}>
+    <div
+      ref={rotatedrag.ref}
+      style={{ touchAction: "none" }}
+      className={stlyles.rotationhandle}
+    >
       旋轉
     </div>
   );
@@ -107,6 +101,7 @@ function RotateButton() {
 function ObjOutlineBox(props: any) {
   const style = props.style;
 
+  let pos: any = {};
   const clac_pos = (type: any, param: any) => {
     let style: any = {};
     switch (type) {
@@ -134,15 +129,38 @@ function ObjOutlineBox(props: any) {
     return style;
   };
 
+  const check_move = (e: any) => {
+    pos.mouse_X = e.x;
+    pos.mouse_Y = e.y;
+  };
+  const check_up = (e: any) => {
+    console.log(pos);
+    window.removeEventListener("mousemove", check_move);
+    window.removeEventListener("mouseup", check_up);
+  };
+  const test = (e: any) => {
+    pos.cor_x = e.pageX;
+    pos.cor_y = e.pageY;
+    window.addEventListener("mousemove", check_move);
+    window.addEventListener("mouseup", check_up);
+  };
   return (
     <div
       style={{
         position: "absolute",
         width: style.width,
         height: style.height,
+        transform: style.transform,
       }}
     >
-      <div className={stlyles.corner} style={clac_pos("top_l", style)}></div>
+      <div
+        onTouchStart={test}
+        onTouchMove={test}
+        onTouchEnd={test}
+        onMouseDown={test}
+        className={stlyles.corner}
+        style={clac_pos("top_l", style)}
+      ></div>
       <div className={stlyles.corner} style={clac_pos("top_r", style)}></div>
       <div className={stlyles.corner} style={clac_pos("bottom_l", style)}></div>
       <div className={stlyles.corner} style={clac_pos("bottom_r", style)}></div>

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import interact from "interactjs";
-
-export const useCustomDrag = () => {
+import { ROTATE_CANVAS_OBJ } from "../Constants";
+import { useCanvasContext } from "../hooks/useCanvasContext";
+export const useCustomDrag = ({ ele }: any) => {
   const interactiveRef = React.useRef(null);
+  const [state, dispatch] = useCanvasContext();
   const [isEnabled, setIsEnabled] = useState(true);
 
   const enable = () => {
@@ -10,7 +12,6 @@ export const useCustomDrag = () => {
       onstart: function (event) {
         const element = event.target.parentElement;
         const rect = element.getBoundingClientRect();
-
         // store the center as the element has css `transform-origin: center center`
         element.dataset.centerX = rect.left + rect.width / 2;
         element.dataset.centerY = rect.top + rect.height / 2;
@@ -20,9 +21,10 @@ export const useCustomDrag = () => {
       onmove: function (event) {
         var element = event.target.parentElement;
         var angle = getDragAngle(event);
-        const x = element.dataset.x;
-        const y = element.dataset.y;
-        element.style.transform = `translate(${x}px, ${y}px) rotate(${angle}rad)`;
+        dispatch({
+          type: ROTATE_CANVAS_OBJ,
+          payload: { id: ele.id, rotate: angle },
+        });
       },
       onend: function (event) {
         var element = event.target.parentElement;
