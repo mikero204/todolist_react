@@ -22,6 +22,7 @@ export type canvasObj = {
   active: boolean;
   lock: boolean;
   color?: string;
+  resizing?: boolean;
 };
 
 export const CanvasContext = createContext<initContext>(initState);

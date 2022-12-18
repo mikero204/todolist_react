@@ -70,6 +70,7 @@ function CanvasObj({ ele }: any) {
               height: height,
               zindex,
             }}
+            id={id}
           />
           <RotateButton ele={ele} />
         </>
@@ -100,6 +101,7 @@ function RotateButton(ele: any) {
 
 function ObjOutlineBox(props: any) {
   const style = props.style;
+  const id = props.id;
   const clac_pos = (type: any, param: any) => {
     let style: any = {};
     switch (type) {
@@ -126,7 +128,6 @@ function ObjOutlineBox(props: any) {
     }
     return style;
   };
-
   return (
     <div
       style={{
@@ -136,13 +137,23 @@ function ObjOutlineBox(props: any) {
         transform: style.transform,
       }}
     >
-      <CornerPoint type="top_l" style={clac_pos("top_l", style)}></CornerPoint>
-      <CornerPoint type="top_r" style={clac_pos("top_r", style)}></CornerPoint>
       <CornerPoint
+        id={id}
+        type="top_l"
+        style={clac_pos("top_l", style)}
+      ></CornerPoint>
+      <CornerPoint
+        id={id}
+        type="top_r"
+        style={clac_pos("top_r", style)}
+      ></CornerPoint>
+      <CornerPoint
+        id={id}
         type="bottom_l"
         style={clac_pos("bottom_l", style)}
       ></CornerPoint>
       <CornerPoint
+        id={id}
         type="bottom_r"
         style={clac_pos("bottom_r", style)}
       ></CornerPoint>
@@ -150,7 +161,9 @@ function ObjOutlineBox(props: any) {
   );
 }
 
-function CornerPoint({ type, style }: any) {
+function CornerPoint({ id, type, style }: any) {
+  const [state, dispatch] = useCanvasContext();
+  //clear listener
   useEffect(() => {
     return () => {
       console.log("clear corner event");
@@ -158,18 +171,20 @@ function CornerPoint({ type, style }: any) {
       window.removeEventListener("mouseup", check_up);
     };
   }, []);
+  let pos: any = {};
   const check_move = (e: any) => {
-    pos.mouse_X = e.x;
-    pos.mouse_Y = e.y;
+    dispatch({
+      type: "CORNER_LEFTTOP_RESIZE",
+      payload: { id, x: e.clientX, y: e.clientY },
+    });
   };
   const check_up = (e: any) => {
-    console.log(pos);
     window.removeEventListener("mousemove", check_move);
     window.removeEventListener("mouseup", check_up);
   };
 
-  let pos: any = {};
   const test = (e: any) => {
+    dispatch({ type: "CORNER_CLICK", payload: { id } });
     pos.cor_x = e.pageX;
     pos.cor_y = e.pageY;
     pos.type = type;
@@ -179,8 +194,6 @@ function CornerPoint({ type, style }: any) {
   return (
     <div
       // onTouchStart={test}
-      // onTouchMove={test}
-      // onTouchEnd={test}
       onMouseDown={test}
       className={stlyles.corner}
       style={style}

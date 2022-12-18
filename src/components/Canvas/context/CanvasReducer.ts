@@ -7,7 +7,6 @@ import {
   MOVE_CANVAS_OBJ,
   ROTATE_CANVAS_OBJ,
 } from "../Constants";
-import uuid from "react-uuid";
 import type { canvasObj } from "./CanvasContext";
 export type canvasStateType = {
   canvasObj_list: canvasObj[];
@@ -89,6 +88,30 @@ export const CanvasReducer = (
       newState.canvasObj_list.forEach((ele) => {
         if (ele.id === id) {
           ele.rotate = rotate;
+        }
+      });
+      return newState;
+    }
+    case "CORNER_LEFTTOP_RESIZE": {
+      let obj = action.payload;
+      const { id, x, y } = obj;
+      newState.canvasObj_list.forEach((ele) => {
+        if (ele.id === id) {
+          ele.x = ele.x - 0.5;
+          ele.y = ele.y - 0.5;
+          ele.width = (Number(ele.width) + 0.5).toString();
+          ele.height = (Number(ele.height) + 0.5).toString();
+        }
+      });
+      return newState;
+    }
+    case "CORNER_CLICK": {
+      let obj = action.payload;
+      const { id } = obj;
+      // console.log(rotate);
+      newState.canvasObj_list.forEach((ele) => {
+        if (ele.id === id) {
+          ele.resizing = true;
         }
       });
       return newState;

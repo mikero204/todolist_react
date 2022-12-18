@@ -35,7 +35,7 @@ function Canvas() {
     mouse_event_active: false,
   };
   const initState: canvasStateType = {
-    canvasObj_list: [obj, obj1],
+    canvasObj_list: [obj1],
   };
   const [state, dispatch] = useReducer(CanvasReducer, initState);
 
