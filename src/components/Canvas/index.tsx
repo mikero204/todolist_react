@@ -7,12 +7,12 @@ function Canvas() {
   const obj = {
     id: uuid(),
     name: uuid(),
-    x: 350,
-    y: 350,
-    width: "217",
-    height: "217",
+    x: 235.35,
+    y: 2.512,
+    width: "200",
+    height: "200",
     zindex: 1,
-    rotate: 0.921143,
+    rotate: 0,
     img: "https://video-public.canva.com/VAFQ9X_oK8g/v/b887464761.gif",
     active: false,
     color: "red",
@@ -27,6 +27,21 @@ function Canvas() {
     width: "200",
     height: "200",
     zindex: 1,
+    rotate: 45,
+    img: "https://video-public.canva.com/VAFQ9X_oK8g/v/b887464761.gif",
+    active: false,
+    color: "red",
+    lock: false,
+    mouse_event_active: false,
+  };
+  const obj3 = {
+    id: uuid(),
+    name: uuid(),
+    x: 0,
+    y: 0,
+    width: "200",
+    height: "200",
+    zindex: 1,
     rotate: 0,
     img: "https://video-public.canva.com/VAFQ9X_oK8g/v/b887464761.gif",
     active: false,
@@ -35,7 +50,7 @@ function Canvas() {
     mouse_event_active: false,
   };
   const initState: canvasStateType = {
-    canvasObj_list: [obj1],
+    canvasObj_list: [obj, obj1],
   };
   const [state, dispatch] = useReducer(CanvasReducer, initState);
 

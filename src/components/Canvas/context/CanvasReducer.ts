@@ -64,8 +64,8 @@ export const CanvasReducer = (
         if (ele.id === id) {
           ele.width = width;
           ele.height = height;
-          ele.x += x;
-          ele.y += y;
+          // ele.x += x;
+          // ele.y += y;
         }
       });
       return newState;
