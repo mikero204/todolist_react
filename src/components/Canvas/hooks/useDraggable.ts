@@ -43,35 +43,36 @@ export const useDraggable = (ele: any) => {
         var target = event.target;
         let width = Number(target.style.width.replace("px", ""));
         let height = Number(target.style.height.replace("px", ""));
-
-        // const cx = 0 + width / 2;
-        // const cy = 50 + height / 2;
-        const rotatedA = rotate(50, 50, 50 + 200, 50 + 200, 0); // calculate A'
-        console.log(rotatedA);
-        // width += 1;
-        // height += 1;
-        // let newCenter = [rotatedA[0] / 2, rotatedA[1]  / 2];
-        const newTopLeft = rotate(
+        // window.addEventListener("mousedown", (e) => {
+        //   console.log(e.clientX, e.clientY);
+        // });
+        width++;
+        height++;
+        const rotatedA = rotate(
+          200,
+          200,
+          200 + width / 2,
+          200 + height / 2,
+          angleToRadian(-45)
+        ); // calculate A'
+        // console.log(rotatedA);
+        const rotatedB = rotate(
           rotatedA[0],
           rotatedA[1],
-          250,
-          250,
-          45 * (Math.PI / 180)
+          200 + width / 2,
+          200 + height / 2,
+          angleToRadian(45)
         );
-        console.log(newTopLeft);
-        // console.log(newTopLeft);
-        // target.style.transform =
-        //   "translate(" +
-        //   newTopLeft[0] +
-        //   "px," +
-        //   newTopLeft[1] +
-        //   "px) rotate(45deg)";
-        // target.style.width = width + "px";
-        // target.style.height = height + "px";
+        console.log(rotatedB);
 
-        // target.style.width = event.rect.width + "px";
-        // target.style.height = event.rect.height + "px";
-        // target.style.transform = "translate(" + x + "px," + y + "px)";
+        target.style.width = width + "px";
+        target.style.height = height + "px";
+        target.style.transform =
+          "translate(" +
+          rotatedB[0] +
+          "px," +
+          rotatedB[1] +
+          "px)  rotate(45deg)";
 
         // dispatch({
         //   type: RESIZE_CANVAS_OBJ,
@@ -117,4 +118,8 @@ function rotate(x: any, y: any, cx: any, cy: any, angle?: any) {
     (x - cx) * Math.cos(angle) - (y - cy) * Math.sin(angle) + cx,
     (x - cx) * Math.sin(angle) + (y - cy) * Math.cos(angle) + cy,
   ];
+}
+
+function angleToRadian(angle) {
+  return (angle * Math.PI) / 180;
 }

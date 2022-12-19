@@ -36,6 +36,7 @@ function CanvasObj({ ele }: any) {
   } = ele;
   let style: any = {
     position: "absolute",
+
     transform: `translate(${x}px, ${y}px) rotate(${rotate}deg)`,
     width: width + "px",
     height: height + "px",
@@ -49,6 +50,7 @@ function CanvasObj({ ele }: any) {
   return (
     <>
       <div
+        className={stlyles.box}
         ref={draggable.ref}
         style={style}
         onClick={activeObj}
