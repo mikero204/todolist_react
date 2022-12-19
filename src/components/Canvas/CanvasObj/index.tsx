@@ -36,7 +36,7 @@ function CanvasObj({ ele }: any) {
   } = ele;
   let style: any = {
     position: "absolute",
-    transform: `translate(${x}px, ${y}px) rotate(${rotate}rad)`,
+    transform: `translate(${x}px, ${y}px) rotate(${rotate}deg)`,
     width: width + "px",
     height: height + "px",
   };
@@ -60,12 +60,12 @@ function CanvasObj({ ele }: any) {
       >
         <img className={stlyles.img_drag} src={ele.img} />
       </div>
-      {ele.active ? (
+      {/* {ele.active ? (
         <>
           <ObjOutlineBox
             style={{
               position: "absolute",
-              transform: `translate(${x}px, ${y}px)`,
+              transform: `translate(${x}px, ${y}px) `,
               width: width,
               height: height,
               zindex,
@@ -74,7 +74,7 @@ function CanvasObj({ ele }: any) {
           />
           <RotateButton ele={ele} />
         </>
-      ) : null}
+      ) : null} */}
     </>
   );
 }
@@ -194,7 +194,7 @@ function CornerPoint({ id, type, style }: any) {
   return (
     <div
       // onTouchStart={test}
-      onMouseDown={test}
+      // onMouseDown={test}
       className={stlyles.corner}
       style={style}
     ></div>
