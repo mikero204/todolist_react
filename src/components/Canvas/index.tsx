@@ -27,7 +27,7 @@ function Canvas() {
     width: "200",
     height: "200",
     zindex: 1,
-    rotate: 45,
+    rotate: 0,
     img: "https://video-public.canva.com/VAFQ9X_oK8g/v/b887464761.gif",
     active: false,
     color: "red",

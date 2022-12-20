@@ -12,9 +12,9 @@ function CanvasObj({ ele }: any) {
   const [showborder, setBorder] = useState(false);
 
   useEffect(() => {
-    // window.addEventListener("mousemove", (e: any) => {
-    //   console.log(e.clientX, e.clientY);
-    // });
+    window.addEventListener("mousedown", (e: any) => {
+      console.log(e.clientX, e.clientY);
+    });
     return () => {
       draggable.disable();
     };
@@ -176,7 +176,6 @@ function ObjOutlineBox(props: any) {
 
 function CornerPoint({ id, name, style }: any) {
   const [state, dispatch] = useCanvasContext();
-  const ref = useRef(null);
   //clear listener
   useEffect(() => {
     return () => {
@@ -186,20 +185,43 @@ function CornerPoint({ id, name, style }: any) {
     };
   }, []);
   const check_move = (e: any) => {
-    const rf: any = ref.current;
-    const rect = rf.getBoundingClientRect();
-    let control = {
-      x: rect.x,
-      y: rect.y,
-    };
     let cav = state.find((ele: any) => {
       return ele.id === id;
     });
+    let t;
+    if (name === "tl") {
+      t = {
+        x: Number(cav.x),
+        y: Number(cav.y),
+      };
+    } else if (name === "tr") {
+      t = {
+        x: Number(cav.x) + Number(cav.width),
+        y: Number(cav.y),
+      };
+    } else if (name === "bl") {
+      t = {
+        x: Number(cav.x),
+        y: Number(cav.y) + Number(cav.height),
+      };
+    } else if (name === "br") {
+      t = {
+        x: Number(cav.x) + Number(cav.width),
+        y: Number(cav.y) + Number(cav.height),
+      };
+    }
+
     const proportion = cav.width / cav.height;
     let centerPosition = {
       x: cav.x + cav.width / 2,
       y: cav.y + cav.height / 2,
     };
+
+    let control = calculateRotatedPointCoordinate(
+      t,
+      centerPosition,
+      cav.rotate
+    );
     const currentPosition = {
       x: e.clientX,
       y: e.clientY,
@@ -215,7 +237,6 @@ function CornerPoint({ id, name, style }: any) {
       newCenterPoint,
       -cav.rotate
     );
-    console.log(newControlPoint);
     let newSymmetricPoint = calculateRotatedPointCoordinate(
       symmetricPoint,
       newCenterPoint,
@@ -223,23 +244,25 @@ function CornerPoint({ id, name, style }: any) {
     );
     let newWidth = Math.abs(newControlPoint.x - newSymmetricPoint.x);
     let newHeight = Math.abs(newSymmetricPoint.y - newControlPoint.y);
-    // if (newWidth / newHeight > proportion) {
-    //   newControlPoint.x += ["tl", "bl"].includes(name)
-    //     ? Math.abs(newWidth - newHeight * proportion)
-    //     : -Math.abs(newWidth - newHeight * proportion);
-    //   newWidth = newHeight * proportion;
-    // } else {
-    //   newControlPoint.y += ["tl", "tr"].includes(name)
-    //     ? Math.abs(newHeight - newWidth / proportion)
-    //     : -Math.abs(newHeight - newWidth / proportion);
-    //   newHeight = newWidth / proportion;
-    // }
+    console.log(newWidth, newHeight);
+    if (newWidth / newHeight > proportion) {
+      newControlPoint.x += ["tl", "bl"].includes(name)
+        ? Math.abs(newWidth - newHeight * proportion)
+        : -Math.abs(newWidth - newHeight * proportion);
+      newWidth = newHeight * proportion;
+    } else {
+      newControlPoint.y += ["tl", "tr"].includes(name)
+        ? Math.abs(newHeight - newWidth / proportion)
+        : -Math.abs(newHeight - newWidth / proportion);
+      newHeight = newWidth / proportion;
+    }
+
     const rotatedControlPoint = calculateRotatedPointCoordinate(
-      currentPosition,
+      newControlPoint,
       newCenterPoint,
       cav.rotate
     );
-    console.log(rotatedControlPoint);
+
     newCenterPoint = getCenterPoint(rotatedControlPoint, symmetricPoint);
     newControlPoint = calculateRotatedPointCoordinate(
       rotatedControlPoint,
@@ -251,13 +274,13 @@ function CornerPoint({ id, name, style }: any) {
       newCenterPoint,
       -cav.rotate
     );
-
     newWidth = ["tl", "bl"].includes(name)
       ? newSymmetricPoint.x - newControlPoint.x
       : newControlPoint.x - newSymmetricPoint.x;
     newHeight = ["tl", "tr"].includes(name)
       ? newSymmetricPoint.y - newControlPoint.y
       : newControlPoint.y - newSymmetricPoint.y;
+
     if (newWidth > 0 && newHeight > 0) {
       dispatch({
         type: "CORNER_RESIZE",
@@ -284,7 +307,7 @@ function CornerPoint({ id, name, style }: any) {
   return (
     <div
       // onTouchStart={test}
-      ref={ref}
+
       onMouseDown={test}
       className={styles.corner}
       style={style}
