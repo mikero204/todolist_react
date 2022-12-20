@@ -1,6 +1,6 @@
 import { useDraggable } from "../hooks/useDraggable";
-import stlyles from "./index.module.scss";
-import { useEffect, useState } from "react";
+import styles from "./index.module.scss";
+import { useEffect, useRef, useState } from "react";
 import { useCanvasContext } from "../hooks/useCanvasContext";
 import { CHANGE_ACTIVE } from "../Constants";
 import { useCustomDrag } from "../hooks/useCustomDrag";
@@ -10,7 +10,11 @@ function CanvasObj({ ele }: any) {
   const draggable = useDraggable(ele);
   const [state, dispatch] = useCanvasContext();
   const [showborder, setBorder] = useState(false);
+
   useEffect(() => {
+    // window.addEventListener("mousemove", (e: any) => {
+    //   console.log(e.clientX, e.clientY);
+    // });
     return () => {
       draggable.disable();
     };
@@ -36,7 +40,6 @@ function CanvasObj({ ele }: any) {
   } = ele;
   let style: any = {
     position: "absolute",
-
     transform: `translate(${x}px, ${y}px) rotate(${rotate}deg)`,
     width: width + "px",
     height: height + "px",
@@ -50,33 +53,32 @@ function CanvasObj({ ele }: any) {
   return (
     <>
       <div
-        className={stlyles.box}
+        className={styles.box}
         ref={draggable.ref}
         style={style}
         onClick={activeObj}
         onTouchEnd={activeObj}
         onMouseMove={() => setBorder(true)}
         onMouseOut={() => setBorder(false)}
-        // data-angle={rotate}
         data-id={id}
       >
-        <img className={stlyles.img_drag} src={ele.img} />
+        <img className={styles.img_drag} src={ele.img} />
+        {ele.active ? (
+          <>
+            <ObjOutlineBox
+              style={{
+                position: "absolute",
+                // transform: `translate(${x}px, ${y}px)  rotate(${rotate}deg) `,
+                width: width,
+                height: height,
+              }}
+              id={id}
+              ele={ele}
+              className={styles.box}
+            />
+          </>
+        ) : null}
       </div>
-      {/* {ele.active ? (
-        <>
-          <ObjOutlineBox
-            style={{
-              position: "absolute",
-              transform: `translate(${x}px, ${y}px) `,
-              width: width,
-              height: height,
-              zindex,
-            }}
-            id={id}
-          />
-          <RotateButton ele={ele} />
-        </>
-      ) : null} */}
     </>
   );
 }
@@ -90,11 +92,18 @@ function RotateButton(ele: any) {
       rotatedrag.disable();
     };
   }, []);
+
   return (
     <div
       ref={rotatedrag.ref}
-      style={{ touchAction: "none" }}
-      className={stlyles.rotationhandle}
+      style={{
+        touchAction: "none",
+        // position: "absolute",
+        // transform: `translate(${x}px, ${y}px)  rotate(${rotate}deg) `,
+        // width: width + "px",
+        // height: height + "px",
+      }}
+      className={styles.rotationhandle}
     >
       旋轉
     </div>
@@ -102,7 +111,8 @@ function RotateButton(ele: any) {
 }
 
 function ObjOutlineBox(props: any) {
-  const style = props.style;
+  const styles = props.style;
+  const ele = props.ele;
   const id = props.id;
   const clac_pos = (type: any, param: any) => {
     let style: any = {};
@@ -110,12 +120,12 @@ function ObjOutlineBox(props: any) {
       case "top_l":
         style.position = "absolute";
         style.top = `-10px`;
-        style.left = `-10px`;
+        style.left = `-14px`;
         break;
       case "top_r":
         style.position = "absolute";
         style.top = "-10px";
-        style.left = param.width - 10 + "px";
+        style.left = param.width - 7 + "px";
         break;
       case "bottom_l":
         style.position = "absolute";
@@ -134,37 +144,39 @@ function ObjOutlineBox(props: any) {
     <div
       style={{
         position: "absolute",
-        width: style.width,
-        height: style.height,
-        transform: style.transform,
+        width: styles.width + "px",
+        height: styles.height + "px",
+        transform: styles.transform,
       }}
     >
       <CornerPoint
         id={id}
-        type="top_l"
-        style={clac_pos("top_l", style)}
+        name="tl"
+        style={clac_pos("top_l", styles)}
       ></CornerPoint>
       <CornerPoint
         id={id}
-        type="top_r"
-        style={clac_pos("top_r", style)}
+        name="tr"
+        style={clac_pos("top_r", styles)}
       ></CornerPoint>
       <CornerPoint
         id={id}
-        type="bottom_l"
-        style={clac_pos("bottom_l", style)}
+        name="bl"
+        style={clac_pos("bottom_l", styles)}
       ></CornerPoint>
       <CornerPoint
         id={id}
-        type="bottom_r"
-        style={clac_pos("bottom_r", style)}
+        name="br"
+        style={clac_pos("bottom_r", styles)}
       ></CornerPoint>
+      <RotateButton ele={ele} />
     </div>
   );
 }
 
-function CornerPoint({ id, type, style }: any) {
+function CornerPoint({ id, name, style }: any) {
   const [state, dispatch] = useCanvasContext();
+  const ref = useRef(null);
   //clear listener
   useEffect(() => {
     return () => {
@@ -173,12 +185,91 @@ function CornerPoint({ id, type, style }: any) {
       window.removeEventListener("mouseup", check_up);
     };
   }, []);
-  let pos: any = {};
   const check_move = (e: any) => {
-    dispatch({
-      type: "CORNER_LEFTTOP_RESIZE",
-      payload: { id, x: e.clientX, y: e.clientY },
+    const rf: any = ref.current;
+    const rect = rf.getBoundingClientRect();
+    let control = {
+      x: rect.x,
+      y: rect.y,
+    };
+    let cav = state.find((ele: any) => {
+      return ele.id === id;
     });
+    const proportion = cav.width / cav.height;
+    let centerPosition = {
+      x: cav.x + cav.width / 2,
+      y: cav.y + cav.height / 2,
+    };
+    const currentPosition = {
+      x: e.clientX,
+      y: e.clientY,
+    };
+    const symmetricPoint = {
+      x: centerPosition.x - (control.x - centerPosition.x),
+      y: centerPosition.y - (control.y - centerPosition.y),
+    };
+
+    let newCenterPoint = getCenterPoint(currentPosition, symmetricPoint);
+    let newControlPoint = calculateRotatedPointCoordinate(
+      currentPosition,
+      newCenterPoint,
+      -cav.rotate
+    );
+    console.log(newControlPoint);
+    let newSymmetricPoint = calculateRotatedPointCoordinate(
+      symmetricPoint,
+      newCenterPoint,
+      -cav.rotate
+    );
+    let newWidth = Math.abs(newControlPoint.x - newSymmetricPoint.x);
+    let newHeight = Math.abs(newSymmetricPoint.y - newControlPoint.y);
+    // if (newWidth / newHeight > proportion) {
+    //   newControlPoint.x += ["tl", "bl"].includes(name)
+    //     ? Math.abs(newWidth - newHeight * proportion)
+    //     : -Math.abs(newWidth - newHeight * proportion);
+    //   newWidth = newHeight * proportion;
+    // } else {
+    //   newControlPoint.y += ["tl", "tr"].includes(name)
+    //     ? Math.abs(newHeight - newWidth / proportion)
+    //     : -Math.abs(newHeight - newWidth / proportion);
+    //   newHeight = newWidth / proportion;
+    // }
+    const rotatedControlPoint = calculateRotatedPointCoordinate(
+      currentPosition,
+      newCenterPoint,
+      cav.rotate
+    );
+    console.log(rotatedControlPoint);
+    newCenterPoint = getCenterPoint(rotatedControlPoint, symmetricPoint);
+    newControlPoint = calculateRotatedPointCoordinate(
+      rotatedControlPoint,
+      newCenterPoint,
+      -cav.rotate
+    );
+    newSymmetricPoint = calculateRotatedPointCoordinate(
+      symmetricPoint,
+      newCenterPoint,
+      -cav.rotate
+    );
+
+    newWidth = ["tl", "bl"].includes(name)
+      ? newSymmetricPoint.x - newControlPoint.x
+      : newControlPoint.x - newSymmetricPoint.x;
+    newHeight = ["tl", "tr"].includes(name)
+      ? newSymmetricPoint.y - newControlPoint.y
+      : newControlPoint.y - newSymmetricPoint.y;
+    if (newWidth > 0 && newHeight > 0) {
+      dispatch({
+        type: "CORNER_RESIZE",
+        payload: {
+          id,
+          width: newWidth,
+          height: newHeight,
+          x: Math.min(newControlPoint.x, newSymmetricPoint.x),
+          y: Math.min(newSymmetricPoint.y, newControlPoint.y),
+        },
+      });
+    }
   };
   const check_up = (e: any) => {
     window.removeEventListener("mousemove", check_move);
@@ -186,19 +277,41 @@ function CornerPoint({ id, type, style }: any) {
   };
 
   const test = (e: any) => {
-    dispatch({ type: "CORNER_CLICK", payload: { id } });
-    pos.cor_x = e.pageX;
-    pos.cor_y = e.pageY;
-    pos.type = type;
+    e.preventDefault();
     window.addEventListener("mousemove", check_move);
     window.addEventListener("mouseup", check_up);
   };
   return (
     <div
       // onTouchStart={test}
-      // onMouseDown={test}
-      className={stlyles.corner}
+      ref={ref}
+      onMouseDown={test}
+      className={styles.corner}
       style={style}
     ></div>
   );
+}
+
+function getCenterPoint(p1: any, p2: any) {
+  return {
+    x: p1.x + (p2.x - p1.x) / 2,
+    y: p1.y + (p2.y - p1.y) / 2,
+  };
+}
+function calculateRotatedPointCoordinate(point: any, center: any, rotate: any) {
+  return {
+    x:
+      (point.x - center.x) * Math.cos(angleToRadian(rotate)) -
+      (point.y - center.y) * Math.sin(angleToRadian(rotate)) +
+      center.x,
+
+    y:
+      (point.x - center.x) * Math.sin(angleToRadian(rotate)) +
+      (point.y - center.y) * Math.cos(angleToRadian(rotate)) +
+      center.y,
+  };
+}
+
+function angleToRadian(angle: any) {
+  return angle * (Math.PI / 180);
 }

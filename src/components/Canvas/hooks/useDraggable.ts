@@ -33,52 +33,14 @@ export const useDraggable = (ele: any) => {
           //   min: { width: 100, height: 100 },
           // }),
         ],
-        inertia: true,
+        square: true,
+        invert: "reposition",
       })
       .draggable({
         modifiers: [],
         inertia: false,
       })
-      .on("resizemove", (event) => {
-        var target = event.target;
-        let width = Number(target.style.width.replace("px", ""));
-        let height = Number(target.style.height.replace("px", ""));
-        // window.addEventListener("mousedown", (e) => {
-        //   console.log(e.clientX, e.clientY);
-        // });
-        width++;
-        height++;
-        const rotatedA = rotate(
-          200,
-          200,
-          200 + width / 2,
-          200 + height / 2,
-          angleToRadian(-45)
-        ); // calculate A'
-        // console.log(rotatedA);
-        const rotatedB = rotate(
-          rotatedA[0],
-          rotatedA[1],
-          200 + width / 2,
-          200 + height / 2,
-          angleToRadian(45)
-        );
-        console.log(rotatedB);
-
-        target.style.width = width + "px";
-        target.style.height = height + "px";
-        target.style.transform =
-          "translate(" +
-          rotatedB[0] +
-          "px," +
-          rotatedB[1] +
-          "px)  rotate(45deg)";
-
-        // dispatch({
-        //   type: RESIZE_CANVAS_OBJ,
-        //   payload: { id: ele.id, width, height },
-        // });
-      })
+      .on("resizemove", (event) => {})
       .on("dragmove", (event) => {
         dispatch({
           type: MOVE_CANVAS_OBJ,
@@ -119,7 +81,11 @@ function rotate(x: any, y: any, cx: any, cy: any, angle?: any) {
     (x - cx) * Math.sin(angle) + (y - cy) * Math.cos(angle) + cy,
   ];
 }
-
-function angleToRadian(angle) {
-  return (angle * Math.PI) / 180;
+function getTranslateXY(element) {
+  const style = window.getComputedStyle(element);
+  const matrix = new DOMMatrixReadOnly(style.transform);
+  return {
+    translateX: matrix.m41,
+    translateY: matrix.m42,
+  };
 }

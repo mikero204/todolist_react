@@ -12,14 +12,24 @@ export const useCustomDrag = ({ ele }: any) => {
       onstart: function (event) {
         const element = event.target.parentElement;
         const rect = element.getBoundingClientRect();
-        // store the center as the element has css `transform-origin: center center`
         element.dataset.centerX = rect.left + rect.width / 2;
         element.dataset.centerY = rect.top + rect.height / 2;
-        // get the angle of the element when the drag starts
-        element.dataset.angle = getDragAngle(event);
+        var startAngle;
+        startAngle =
+          parseFloat(element.dataset.angle) ||
+          (parseFloat(ele.rotate) * Math.PI) / 180;
+
+        var center = {
+          x: parseFloat(element.dataset.centerX) || 0,
+          y: parseFloat(element.dataset.centerY) || 0,
+        };
+        var angle = Math.atan2(
+          center.y - event.clientY,
+          center.x - event.clientX
+        );
+        element.dataset.angle = angle - startAngle;
       },
       onmove: function (event) {
-        var element = event.target.parentElement;
         var angle = getDragAngle(event);
         dispatch({
           type: ROTATE_CANVAS_OBJ,
@@ -55,13 +65,13 @@ export const useCustomDrag = ({ ele }: any) => {
   };
 };
 function getDragAngle(event: any) {
+  var startAngle;
   var element = event.target.parentElement;
-  var startAngle = parseFloat(element.dataset.angle) || 0;
+  startAngle = parseFloat(element.dataset.angle) || 0;
   var center = {
     x: parseFloat(element.dataset.centerX) || 0,
     y: parseFloat(element.dataset.centerY) || 0,
   };
   var angle = Math.atan2(center.y - event.clientY, center.x - event.clientX);
-
   return angle - startAngle;
 }

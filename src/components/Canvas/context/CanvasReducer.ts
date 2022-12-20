@@ -84,34 +84,22 @@ export const CanvasReducer = (
     case ROTATE_CANVAS_OBJ: {
       let obj = action.payload;
       const { id, rotate } = obj;
-      // console.log(rotate);
       newState.canvasObj_list.forEach((ele) => {
         if (ele.id === id) {
-          ele.rotate = rotate;
+          ele.rotate = (rotate * 180) / Math.PI;
         }
       });
       return newState;
     }
-    case "CORNER_LEFTTOP_RESIZE": {
+    case "CORNER_RESIZE": {
       let obj = action.payload;
-      const { id, x, y } = obj;
+      const { id, x, y, width, height } = obj;
       newState.canvasObj_list.forEach((ele) => {
         if (ele.id === id) {
-          ele.x = ele.x - 0.5;
-          ele.y = ele.y - 0.5;
-          ele.width = (Number(ele.width) + 0.5).toString();
-          ele.height = (Number(ele.height) + 0.5).toString();
-        }
-      });
-      return newState;
-    }
-    case "CORNER_CLICK": {
-      let obj = action.payload;
-      const { id } = obj;
-      // console.log(rotate);
-      newState.canvasObj_list.forEach((ele) => {
-        if (ele.id === id) {
-          ele.resizing = true;
+          ele.x = x;
+          ele.y = y;
+          ele.width = width.toString();
+          ele.height = height.toString();
         }
       });
       return newState;

@@ -5,10 +5,11 @@
 .img_drag {
   width: 100%;
   height: 100%;
+  position: absolute;
 }
 .box {
-  transform-origin: top left;
-  transform: translate(-50%, -50%);
+  // transform-origin: top left;
+  // transform: translate(-50%, -50%);
 }
 .outlinebox {
   background-color: red;
