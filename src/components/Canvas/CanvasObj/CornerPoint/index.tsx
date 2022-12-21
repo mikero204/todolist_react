@@ -1,8 +1,10 @@
 import { useCanvasContext } from "../../hooks/useCanvasContext";
+import { useWindowSize } from "../../hooks/useWindowSize";
 import { useEffect } from "react";
 import styles from "../index.module.scss";
 function CornerPoint({ id, name, style }: any) {
   const [state, dispatch] = useCanvasContext();
+  const size = useWindowSize();
   //clear listener
   useEffect(() => {
     return () => {
@@ -52,17 +54,17 @@ function CornerPoint({ id, name, style }: any) {
       centerPosition,
       cav.rotate
     );
-
+    const topheight = size.height * 0.15;
     const currentPosition = {
-      x: e.pageX,
-      y: e.pageY,
+      x: e.clientX - 16,
+      y: e.clientY - topheight - 16,
     };
+    console.log(e);
     const symmetricPoint = {
       x: centerPosition.x - (control.x - centerPosition.x),
       y: centerPosition.y - (control.y - centerPosition.y),
     };
     let newCenterPoint = getCenterPoint(currentPosition, symmetricPoint);
-
     let newControlPoint = calculateRotatedPointCoordinate(
       currentPosition,
       newCenterPoint,
