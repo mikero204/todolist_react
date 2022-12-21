@@ -19,20 +19,7 @@ export const useDraggable = (ele: any) => {
     interact(interactiveRef.current as unknown as HTMLElement)
       .resizable({
         edges: { left: true, right: true, bottom: true, top: true },
-        modifiers: [
-          // keep the edges inside the parent
-          // interact.modifiers.restrictEdges({
-          //   outer: "parent",
-          // }),
-          // interact.modifiers.aspectRatio({
-          //   ratio: 1,
-          //   modifiers: [interact.modifiers.restrictSize({ max: "parent" })],
-          // }),
-          // // minimum size
-          // interact.modifiers.restrictSize({
-          //   min: { width: 100, height: 100 },
-          // }),
-        ],
+        modifiers: [],
         square: true,
         invert: "reposition",
       })
@@ -49,7 +36,9 @@ export const useDraggable = (ele: any) => {
       });
   };
   const disable = () => {
-    interact(interactiveRef.current as unknown as HTMLElement).unset();
+    if (interactiveRef.current) {
+      interact(interactiveRef.current as unknown as HTMLElement).unset();
+    }
   };
   useEffect(() => {
     if (isEnabled) {
@@ -60,13 +49,14 @@ export const useDraggable = (ele: any) => {
     return disable;
   }, [isEnabled]);
 
-  useEffect(() => {
-    if (!ele.active) {
-      disable();
-    } else {
-      enable();
-    }
-  }, [ele.active]);
+  // useEffect(() => {
+  //   if (!ele.active) {
+  //     disable();
+  //   } else {
+  //     disable();
+  //     enable();
+  //   }
+  // }, [ele.active]);
 
   return {
     ref: interactiveRef,
@@ -74,18 +64,3 @@ export const useDraggable = (ele: any) => {
     disable: () => setIsEnabled(false),
   };
 };
-
-function rotate(x: any, y: any, cx: any, cy: any, angle?: any) {
-  return [
-    (x - cx) * Math.cos(angle) - (y - cy) * Math.sin(angle) + cx,
-    (x - cx) * Math.sin(angle) + (y - cy) * Math.cos(angle) + cy,
-  ];
-}
-function getTranslateXY(element) {
-  const style = window.getComputedStyle(element);
-  const matrix = new DOMMatrixReadOnly(style.transform);
-  return {
-    translateX: matrix.m41,
-    translateY: matrix.m42,
-  };
-}

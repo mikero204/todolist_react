@@ -1,12 +1,11 @@
-import { useDraggable } from "../hooks/useDraggable";
+import { useDraggable } from "src/components/Canvas/hooks/useDraggable";
 import styles from "./index.module.scss";
 import { useEffect, useRef, useState } from "react";
 import { useCanvasContext } from "../hooks/useCanvasContext";
-import { CHANGE_ACTIVE } from "../Constants";
-import { useCustomDrag } from "../hooks/useCustomDrag";
+import { CHANGE_ACTIVE, DELETE_OBJ, COPY_OBJ } from "../Constants";
+import CanvasObjOutLineBox from "./CanvasObjOutLineBox";
 
 function CanvasObj({ ele }: any) {
-  // console.log(ele);
   const draggable = useDraggable(ele);
   const [state, dispatch] = useCanvasContext();
   const [showborder, setBorder] = useState(false);
@@ -65,7 +64,7 @@ function CanvasObj({ ele }: any) {
         <img className={styles.img_drag} src={ele.img} />
         {ele.active ? (
           <>
-            <ObjOutlineBox
+            <CanvasObjOutLineBox
               style={{
                 position: "absolute",
                 // transform: `translate(${x}px, ${y}px)  rotate(${rotate}deg) `,
@@ -79,262 +78,83 @@ function CanvasObj({ ele }: any) {
           </>
         ) : null}
       </div>
+      {ele.active ? (
+        <>
+          <CanvasHoverToolBar ele={ele} />
+        </>
+      ) : null}
     </>
   );
 }
 
 export default CanvasObj;
-
-function RotateButton(ele: any) {
-  const rotatedrag = useCustomDrag(ele);
-  useEffect(() => {
-    return () => {
-      rotatedrag.disable();
-    };
-  }, []);
-
-  return (
-    <div
-      ref={rotatedrag.ref}
-      style={{
-        touchAction: "none",
-        // position: "absolute",
-        // transform: `translate(${x}px, ${y}px)  rotate(${rotate}deg) `,
-        // width: width + "px",
-        // height: height + "px",
-      }}
-      className={styles.rotationhandle}
-    >
-      旋轉
-    </div>
-  );
-}
-
-function ObjOutlineBox(props: any) {
-  const styles = props.style;
-  const ele = props.ele;
-  const id = props.id;
-  const clac_pos = (type: any, param: any) => {
-    let style: any = {};
-    switch (type) {
-      case "top_l":
-        style.position = "absolute";
-        style.top = `-10px`;
-        style.left = `-14px`;
-        break;
-      case "top_r":
-        style.position = "absolute";
-        style.top = "-10px";
-        style.left = param.width - 7 + "px";
-        break;
-      case "bottom_l":
-        style.position = "absolute";
-        style.top = param.height - 10 + "px";
-        style.left = "-10" + "px";
-        break;
-      case "bottom_r":
-        style.position = "absolute";
-        style.top = param.height - 10 + "px";
-        style.left = param.width - 10 + "px";
-        break;
-    }
-    return style;
-  };
-  return (
-    <div
-      style={{
-        position: "absolute",
-        width: styles.width + "px",
-        height: styles.height + "px",
-        transform: styles.transform,
-      }}
-    >
-      <CornerPoint
-        id={id}
-        name="tl"
-        style={clac_pos("top_l", styles)}
-      ></CornerPoint>
-      <CornerPoint
-        id={id}
-        name="tr"
-        style={clac_pos("top_r", styles)}
-      ></CornerPoint>
-      <CornerPoint
-        id={id}
-        name="bl"
-        style={clac_pos("bottom_l", styles)}
-      ></CornerPoint>
-      <CornerPoint
-        id={id}
-        name="br"
-        style={clac_pos("bottom_r", styles)}
-      ></CornerPoint>
-      <RotateButton ele={ele} />
-    </div>
-  );
-}
-
-function CornerPoint({ id, name, style }: any) {
+function CanvasHoverToolBar({ ele }: any) {
   const [state, dispatch] = useCanvasContext();
-  //clear listener
-  useEffect(() => {
-    return () => {
-      console.log("clear corner event");
-      window.removeEventListener("mousemove", check_move);
-      window.removeEventListener("mouseup", check_up);
-    };
-  }, []);
-  const check_move = (e: any) => {
-    let cav = state.find((ele: any) => {
-      return ele.id === id;
-    });
-    let t;
-    if (name === "tl") {
-      t = {
-        x: Number(cav.x),
-        y: Number(cav.y),
-      };
-    } else if (name === "tr") {
-      t = {
-        x: Number(cav.x) + Number(cav.width),
-        y: Number(cav.y),
-      };
-    } else if (name === "bl") {
-      t = {
-        x: Number(cav.x),
-        y: Number(cav.y) + Number(cav.height),
-      };
-    } else if (name === "br") {
-      t = {
-        x: Number(cav.x) + Number(cav.width),
-        y: Number(cav.y) + Number(cav.height),
-      };
-    }
-
-    const proportion = cav.width / cav.height;
-    let centerPosition = {
-      x: cav.x + cav.width / 2,
-      y: cav.y + cav.height / 2,
-    };
-
-    let control = calculateRotatedPointCoordinate(
-      t,
-      centerPosition,
-      cav.rotate
-    );
-    const currentPosition = {
-      x: e.clientX,
-      y: e.clientY,
-    };
-    const symmetricPoint = {
-      x: centerPosition.x - (control.x - centerPosition.x),
-      y: centerPosition.y - (control.y - centerPosition.y),
-    };
-
-    let newCenterPoint = getCenterPoint(currentPosition, symmetricPoint);
-    let newControlPoint = calculateRotatedPointCoordinate(
-      currentPosition,
-      newCenterPoint,
-      -cav.rotate
-    );
-    let newSymmetricPoint = calculateRotatedPointCoordinate(
-      symmetricPoint,
-      newCenterPoint,
-      -cav.rotate
-    );
-    let newWidth = Math.abs(newControlPoint.x - newSymmetricPoint.x);
-    let newHeight = Math.abs(newSymmetricPoint.y - newControlPoint.y);
-    console.log(newWidth, newHeight);
-    if (newWidth / newHeight > proportion) {
-      newControlPoint.x += ["tl", "bl"].includes(name)
-        ? Math.abs(newWidth - newHeight * proportion)
-        : -Math.abs(newWidth - newHeight * proportion);
-      newWidth = newHeight * proportion;
-    } else {
-      newControlPoint.y += ["tl", "tr"].includes(name)
-        ? Math.abs(newHeight - newWidth / proportion)
-        : -Math.abs(newHeight - newWidth / proportion);
-      newHeight = newWidth / proportion;
-    }
-
-    const rotatedControlPoint = calculateRotatedPointCoordinate(
-      newControlPoint,
-      newCenterPoint,
-      cav.rotate
-    );
-
-    newCenterPoint = getCenterPoint(rotatedControlPoint, symmetricPoint);
-    newControlPoint = calculateRotatedPointCoordinate(
-      rotatedControlPoint,
-      newCenterPoint,
-      -cav.rotate
-    );
-    newSymmetricPoint = calculateRotatedPointCoordinate(
-      symmetricPoint,
-      newCenterPoint,
-      -cav.rotate
-    );
-    newWidth = ["tl", "bl"].includes(name)
-      ? newSymmetricPoint.x - newControlPoint.x
-      : newControlPoint.x - newSymmetricPoint.x;
-    newHeight = ["tl", "tr"].includes(name)
-      ? newSymmetricPoint.y - newControlPoint.y
-      : newControlPoint.y - newSymmetricPoint.y;
-
-    if (newWidth > 0 && newHeight > 0) {
-      dispatch({
-        type: "CORNER_RESIZE",
-        payload: {
-          id,
-          width: newWidth,
-          height: newHeight,
-          x: Math.min(newControlPoint.x, newSymmetricPoint.x),
-          y: Math.min(newSymmetricPoint.y, newControlPoint.y),
-        },
-      });
-    }
+  const transform = `translate(${ele.x + Number(ele.width) / 3}px, ${
+    ele.y - 60
+  }px)`;
+  const copyObj = () => {
+    dispatch({ type: COPY_OBJ, payload: { id: ele.id } });
   };
-  const check_up = (e: any) => {
-    window.removeEventListener("mousemove", check_move);
-    window.removeEventListener("mouseup", check_up);
-  };
-
-  const test = (e: any) => {
-    e.preventDefault();
-    window.addEventListener("mousemove", check_move);
-    window.addEventListener("mouseup", check_up);
+  const deleteObj = () => {
+    dispatch({ type: DELETE_OBJ, payload: { id: ele.id } });
   };
   return (
     <div
-      // onTouchStart={test}
-
-      onMouseDown={test}
-      className={styles.corner}
-      style={style}
-    ></div>
+      style={{
+        display: "flex",
+        position: "absolute",
+        justifyContent: "center",
+        alignItems: "center",
+        width: "80px",
+        height: "40px",
+        boxShadow:
+          "0 0 0 1px rgba(64,87,109,0.07),0 2px 12px rgba(53,71,90,0.2)",
+        borderRadius: "10rem",
+        transform: transform,
+      }}
+    >
+      <div
+        onClick={copyObj}
+        style={{ display: "flex", alignItems: "center", height: "30px" }}
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            fillRule="evenodd"
+            clipRule="evenodd"
+            d="M5 3h8a2 2 0 0 1 2 2v.5h-1.5V5a.5.5 0 0 0-.5-.5H5a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h2.5V17H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Zm6 5.5a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5V9a.5.5 0 0 0-.5-.5h-8ZM19 7h-8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"
+            fill="currentColor"
+          ></path>
+          <path
+            fillRule="evenodd"
+            clipRule="evenodd"
+            d="M15 11a.75.75 0 0 0-.75.75v1.5h-1.5a.75.75 0 0 0 0 1.5h1.5v1.5a.75.75 0 0 0 1.5 0v-1.5h1.5a.75.75 0 0 0 0-1.5h-1.5v-1.5A.75.75 0 0 0 15 11Z"
+            fill="currentColor"
+          ></path>
+        </svg>
+      </div>
+      <div
+        onClick={deleteObj}
+        style={{ display: "flex", alignItems: "center", height: "30px" }}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+        >
+          <path
+            fill="currentColor"
+            d="M8 5a3 3 0 0 1 3-3h2a3 3 0 0 1 3 3h4.25a.75.75 0 1 1 0 1.5H19V18a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V6.5H3.75a.75.75 0 0 1 0-1.5H8zM6.5 6.5V18c0 .83.67 1.5 1.5 1.5h8c.83 0 1.5-.67 1.5-1.5V6.5h-11zm3-1.5h5c0-.83-.67-1.5-1.5-1.5h-2c-.83 0-1.5.67-1.5 1.5zm-.25 4h1.5v8h-1.5V9zm4 0h1.5v8h-1.5V9z"
+          ></path>
+        </svg>
+      </div>
+    </div>
   );
-}
-
-function getCenterPoint(p1: any, p2: any) {
-  return {
-    x: p1.x + (p2.x - p1.x) / 2,
-    y: p1.y + (p2.y - p1.y) / 2,
-  };
-}
-function calculateRotatedPointCoordinate(point: any, center: any, rotate: any) {
-  return {
-    x:
-      (point.x - center.x) * Math.cos(angleToRadian(rotate)) -
-      (point.y - center.y) * Math.sin(angleToRadian(rotate)) +
-      center.x,
-
-    y:
-      (point.x - center.x) * Math.sin(angleToRadian(rotate)) +
-      (point.y - center.y) * Math.cos(angleToRadian(rotate)) +
-      center.y,
-  };
-}
-
-function angleToRadian(angle: any) {
-  return angle * (Math.PI / 180);
 }

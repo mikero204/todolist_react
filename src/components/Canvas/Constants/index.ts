@@ -5,3 +5,6 @@ export const CHANGE_ACTIVE = "CHANGE_ACTIVE";
 export const RESIZE_CANVAS_OBJ = "RESIZE_CANVAS_OBJ";
 export const MOVE_CANVAS_OBJ = "MOVE_CANVAS_OBJ";
 export const ROTATE_CANVAS_OBJ = "ROTATE_CANVAS_OBJ";
+export const DELETE_OBJ = "DELETE_OBJ";
+export const COPY_OBJ = "COPY_OBJ";
+export const CORNER_RESIZE = "CORNER_RESIZE";

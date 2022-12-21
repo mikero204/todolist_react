@@ -6,7 +6,11 @@ import {
   RESIZE_CANVAS_OBJ,
   MOVE_CANVAS_OBJ,
   ROTATE_CANVAS_OBJ,
+  DELETE_OBJ,
+  COPY_OBJ,
+  CORNER_RESIZE,
 } from "../Constants";
+import uuid from "react-uuid";
 import type { canvasObj } from "./CanvasContext";
 export type canvasStateType = {
   canvasObj_list: canvasObj[];
@@ -26,28 +30,10 @@ export const CanvasReducer = (
   switch (action.type) {
     case ADD_CANVAS_OBJ:
       return newState;
-    case UPDATE_CANVAS_OBJ: {
-      let obj = action.payload;
-      // console.log(obj);
-      // console.log(newState);
-      newState.canvasObj_list.forEach((element) => {
-        if (element.id === obj.id) {
-          element.x = obj.x;
-          element.y = obj.y;
-          element.width = obj.width;
-          element.height = obj.height;
-          if (obj.rotate) {
-            element.rotate = obj.rotate;
-          }
-        }
-      });
-      return newState;
-    }
     case DELETE_CANVAS_OBJ:
       return newState;
     case CHANGE_ACTIVE: {
       let obj = action.payload;
-
       newState.canvasObj_list.forEach((element) => {
         if (element.id !== obj.id) {
           element.active = false;
@@ -57,26 +43,16 @@ export const CanvasReducer = (
       });
       return newState;
     }
-    case RESIZE_CANVAS_OBJ: {
-      let obj = action.payload;
-      const { id, width, height, x, y } = obj;
-      newState.canvasObj_list.forEach((ele) => {
-        if (ele.id === id) {
-          ele.width = width;
-          ele.height = height;
-          // ele.x += x;
-          // ele.y += y;
-        }
-      });
-      return newState;
-    }
     case MOVE_CANVAS_OBJ: {
       let obj = action.payload;
       const { id, x, y } = obj;
       newState.canvasObj_list.forEach((ele) => {
         if (ele.id === id) {
+          ele.active = true;
           ele.x += x;
           ele.y += y;
+        } else {
+          ele.active = false;
         }
       });
       return newState;
@@ -91,7 +67,7 @@ export const CanvasReducer = (
       });
       return newState;
     }
-    case "CORNER_RESIZE": {
+    case CORNER_RESIZE: {
       let obj = action.payload;
       const { id, x, y, width, height } = obj;
       newState.canvasObj_list.forEach((ele) => {
@@ -102,6 +78,34 @@ export const CanvasReducer = (
           ele.height = height.toString();
         }
       });
+      return newState;
+    }
+    case COPY_OBJ: {
+      let obj = action.payload;
+      const { id } = obj;
+      const findobj = newState.canvasObj_list.find((ele) => {
+        return ele.id === id;
+      });
+
+      let newobj = {
+        ...findobj,
+        id: uuid(),
+        x: findobj!.x + 30,
+        y: findobj!.y + 30,
+        // active: false,
+      } as canvasObj;
+      findobj!.active = false;
+      newState.canvasObj_list.push(newobj);
+      return newState;
+    }
+    case DELETE_OBJ: {
+      let obj = action.payload;
+      const { id } = obj;
+      const findobjIndex = newState.canvasObj_list.findIndex((ele) => {
+        return ele.id === id;
+      });
+
+      newState.canvasObj_list.splice(findobjIndex, 1);
       return newState;
     }
     default:

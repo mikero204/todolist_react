@@ -1,0 +1,19 @@
+.rotationhandle {
+  padding: 3px 4px;
+  display: table;
+  position: absolute;
+  touch-action: none;
+  left: calc(50% - 12px);
+  bottom: -65px;
+
+  border-radius: 10rem;
+  line-height: 1;
+  text-align: center;
+  font-weight: bold;
+  color: #fff;
+  // cursor: move;
+  box-shadow: 6px 6px 3px rgba(0, 0, 0, 0.1);
+  &:hover {
+    background-color: #8b3dff;
+  }
+}
