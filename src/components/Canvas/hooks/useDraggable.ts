@@ -17,23 +17,32 @@ export const useDraggable = (ele: any) => {
   const [isEnabled, setIsEnabled] = useState(true);
   const enable = () => {
     interact(interactiveRef.current as unknown as HTMLElement)
-      .resizable({
-        edges: { left: true, right: true, bottom: true, top: true },
-        modifiers: [],
-        square: true,
-        invert: "reposition",
-      })
+      // .resizable({
+      //   edges: { left: true, right: true, bottom: true, top: true },
+      //   modifiers: [],
+      //   square: true,
+      //   invert: "reposition",
+      // })
       .draggable({
-        modifiers: [],
-        inertia: false,
+        modifiers: [
+          interact.modifiers.restrictRect({
+            restriction: "parent",
+          }),
+        ],
+        inertia: true,
+        // autoScroll: true,
       })
-      .on("resizemove", (event) => {})
-      .on("dragmove", (event) => {
-        dispatch({
-          type: MOVE_CANVAS_OBJ,
-          payload: { id: ele.id, x: event.dx, y: event.dy },
-        });
-      });
+      .styleCursor(false)
+      .on(
+        "dragmove",
+        (event) => {
+          dispatch({
+            type: MOVE_CANVAS_OBJ,
+            payload: { id: ele.id, x: event.dx, y: event.dy },
+          });
+        },
+        false
+      );
   };
   const disable = () => {
     if (interactiveRef.current) {

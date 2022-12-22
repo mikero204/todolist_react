@@ -10,22 +10,26 @@ function CavasObjOutLineBox(props: any) {
       case "top_l":
         style.position = "absolute";
         style.top = `-10px`;
-        style.left = `-14px`;
+        style.left = `-10px`;
+        style.cursor = `nwse-resize`;
         break;
       case "top_r":
         style.position = "absolute";
         style.top = "-10px";
-        style.left = param.width - 7 + "px";
+        style.left = param.width - 10 + "px";
+        style.cursor = `nesw-resize`;
         break;
       case "bottom_l":
         style.position = "absolute";
         style.top = param.height - 10 + "px";
         style.left = "-10" + "px";
+        style.cursor = `nesw-resize`;
         break;
       case "bottom_r":
         style.position = "absolute";
         style.top = param.height - 10 + "px";
         style.left = param.width - 10 + "px";
+        style.cursor = `nwse-resize`;
         break;
     }
     return style;
@@ -37,6 +41,8 @@ function CavasObjOutLineBox(props: any) {
         width: styles.width + "px",
         height: styles.height + "px",
         transform: styles.transform,
+        cursor: "pointer",
+        userSelect: "none",
       }}
     >
       <CornerPoint

@@ -6,15 +6,12 @@
   width: 100%;
   height: 100%;
   position: absolute;
+  user-select: none;
 }
 .box {
-  // transform-origin: top left;
-  // transform: translate(-50%, -50%);
+  user-select: none;
 }
-.outlinebox {
-  background-color: red;
-  position: relative;
-}
+
 .corner {
   width: 16px;
   height: 16px;

@@ -9,13 +9,26 @@ import {
   DELETE_OBJ,
   COPY_OBJ,
   CORNER_RESIZE,
+  CANVAS_PARAMS,
 } from "../Constants";
 import uuid from "react-uuid";
 import type { canvasObj } from "./CanvasContext";
 export type canvasStateType = {
   canvasObj_list: canvasObj[];
+  canvas_params: canvas_paramsType;
 };
-
+type canvas_paramsType = {
+  appwidth: Number;
+  appheight: Number;
+  padding: Number;
+  topheight: Number;
+  centerheight: Number;
+  bottomheight: Number;
+  innerCanvasWidth: Number;
+  innerCanvasHeight: Number;
+  Canvas_transformY: Number;
+  canvas_scale: Number;
+};
 type canvasActionType = {
   type: string;
   payload: any;
@@ -106,6 +119,11 @@ export const CanvasReducer = (
       });
 
       newState.canvasObj_list.splice(findobjIndex, 1);
+      return newState;
+    }
+    case CANVAS_PARAMS: {
+      let obj = action.payload;
+      newState.canvas_params = { ...obj };
       return newState;
     }
     default:

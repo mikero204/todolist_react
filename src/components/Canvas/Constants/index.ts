@@ -8,3 +8,4 @@ export const ROTATE_CANVAS_OBJ = "ROTATE_CANVAS_OBJ";
 export const DELETE_OBJ = "DELETE_OBJ";
 export const COPY_OBJ = "COPY_OBJ";
 export const CORNER_RESIZE = "CORNER_RESIZE";
+export const CANVAS_PARAMS = "CANVAS_PARAMS";

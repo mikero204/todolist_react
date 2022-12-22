@@ -3,16 +3,17 @@ import { useWindowSize } from "./hooks/useWindowSize";
 import CanvasObj from "./CanvasObj";
 import { CanvasContext } from "./context/CanvasContext";
 import { CanvasReducer, canvasStateType } from "./context/CanvasReducer";
+import { CANVAS_PARAMS } from "./Constants";
 import uuid from "react-uuid";
 function Canvas() {
   const size = useWindowSize();
   const obj1 = {
     id: uuid(),
     name: uuid(),
-    x: 200,
-    y: 200,
-    width: "200",
-    height: "200",
+    x: 0,
+    y: 0,
+    width: "50",
+    height: "50",
     zindex: 1,
     rotate: 0,
     img: "https://video-public.canva.com/VAFQ9X_oK8g/v/b887464761.gif",
@@ -24,43 +25,92 @@ function Canvas() {
 
   const initState: canvasStateType = {
     canvasObj_list: [obj1],
+    canvas_params: {
+      appwidth: 0,
+      appheight: 0,
+      padding: 0,
+      topheight: 0,
+      centerheight: 0,
+      bottomheight: 0,
+      innerCanvasWidth: 0,
+      innerCanvasHeight: 0,
+      Canvas_transformY: 0,
+      canvas_scale: 0,
+    },
   };
   const [state, dispatch] = useReducer(CanvasReducer, initState);
+  useEffect(() => {
+    const appwidth = size.width;
+    const appheight = size.height;
+    const padding = 16;
+    const topheight = size.height * 0.06;
+    const centerheight = size.height * 0.88;
+    const bottomheight = size.height * 0.06;
+    const innerCanvasWidth = Math.min(size.width - padding * 2, 400);
+    const innerCanvasHeight = Math.min(
+      innerCanvasWidth - innerCanvasWidth / 4,
+      300
+    );
+    const Canvas_transformY =
+      centerheight / 2 - innerCanvasHeight / 2 - padding - 30;
+    const canvas_scale = 1;
+    dispatch({
+      type: CANVAS_PARAMS,
+      payload: {
+        appwidth,
+        appheight,
+        padding,
+        topheight,
+        centerheight,
+        bottomheight,
+        innerCanvasWidth,
+        innerCanvasHeight,
+        Canvas_transformY,
+        canvas_scale,
+      },
+    });
+  }, [size]);
 
-  const topheight = size.height * 0.15;
-  const centerheight = size.height * 0.7;
-  const bottomheight = size.height * 0.15;
-  console.log(size);
   //1.得到使用者螢幕寬度
   //2.改變畫板寬度及高度
 
   return (
     <CanvasContext.Provider
-      value={{ state: state.canvasObj_list, dispatch: dispatch }}
+      value={{
+        state: {
+          canvasObj_list: state.canvasObj_list,
+          canvas_params: state.canvas_params,
+        },
+        dispatch: dispatch,
+      }}
     >
       <div
         style={{
-          width: size.width + "px",
-          height: topheight + "px",
+          width: state.canvas_params.appwidth + "px",
+          height: state.canvas_params.topheight + "px",
         }}
       >
         Header
       </div>
       <div
         style={{
-          width: size.width + "px",
-          height: centerheight + "px",
+          width: state.canvas_params.appwidth + "px",
+          height: state.canvas_params.centerheight + "px",
           touchAction: "none",
-          padding: "16px",
+          padding: state.canvas_params.padding + "px",
+          backgroundColor: "rgba(43,59,74,0.1)",
         }}
       >
         <div
           style={{
-            width: 100 + "%",
-            height: 300 + "px",
+            width: state.canvas_params.innerCanvasWidth + "px",
+            height: state.canvas_params.innerCanvasHeight + "px",
+            transform: `translate(0px,${state.canvas_params.Canvas_transformY}px) scale(${state.canvas_params.canvas_scale})`,
             border: "1px solid black",
             margin: "0 auto",
+            backgroundColor: "white",
           }}
+          id="canvas_container"
         >
           {state.canvasObj_list.map((ele) => {
             return <CanvasObj key={ele.id} ele={ele} />;
@@ -69,8 +119,8 @@ function Canvas() {
       </div>
       <div
         style={{
-          width: size.width + "px",
-          height: bottomheight + "px",
+          width: state.canvas_params.appwidth + "px",
+          height: state.canvas_params.bottomheight + "px",
         }}
       >
         Footer
