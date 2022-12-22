@@ -37,6 +37,7 @@ function CanvasObj({ ele }: any) {
     lock,
     color,
   } = ele;
+  const obj_size = state.canvas_params.Canvas_obj_size;
   let style: any = {
     position: "absolute",
     transform: `translate(${x}px, ${y}px) rotate(${rotate}deg)`,
@@ -91,7 +92,17 @@ function CanvasObj({ ele }: any) {
         onMouseOut={() => setBorder(false)}
         data-id={id}
       >
-        <img className={styles.img_drag} src={ele.img} />
+        <span
+          className={styles.img_drag}
+          style={{
+            display: "inlineBlock",
+            background: `url(${ele.img})`,
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+            backgroundSize: "contain",
+            backgroundAttachment: "scroll",
+          }}
+        />
       </div>
     </>
   );

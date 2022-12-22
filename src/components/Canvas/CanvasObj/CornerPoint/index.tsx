@@ -1,18 +1,10 @@
 import { useCanvasContext } from "../../hooks/useCanvasContext";
 import { useEffect, useRef, useState } from "react";
 import styles from "../index.module.scss";
-import { useLongPress } from "use-long-press";
 
 function CornerPoint({ id, name, style }: any) {
   const [state, dispatch] = useCanvasContext();
   const ref = useRef(null);
-  // useEffect(() => {
-  //   if (ref.current) {
-  //     const dom: HTMLDivElement = ref.current;
-  //     const { x, y } = dom.getBoundingClientRect();
-  //     dispatch({ type: "UPDATE_CANVAS_OBJ", payload: { id, name, x, y } });
-  //   }
-  // }, [style]);
 
   //clear listener
   useEffect(() => {
@@ -23,6 +15,14 @@ function CornerPoint({ id, name, style }: any) {
   }, []);
 
   const mouse_resize = (e: any) => {
+    let cav = state.canvasObj_list.find((ele: any) => {
+      return ele.id === id;
+    });
+    const scale = state.canvas_params.Canvas_scale;
+    console.log(
+      "width" + Number(cav.width * scale),
+      "height" + Number(cav.height * scale)
+    );
     window.addEventListener("mousemove", mousecheck_move);
     window.addEventListener("mouseup", mousecheck_up);
   };
@@ -30,6 +30,10 @@ function CornerPoint({ id, name, style }: any) {
     let cav = state.canvasObj_list.find((ele: any) => {
       return ele.id === id;
     });
+    // const scale = state.canvas_params.Canvas_scale;
+    const scale = 1;
+    // console.log(Number(cav.width * scale));
+
     let control_pos;
     if (name === "tl") {
       control_pos = {
@@ -38,50 +42,66 @@ function CornerPoint({ id, name, style }: any) {
       };
     } else if (name === "tr") {
       control_pos = {
-        x: Number(cav.x) + Number(cav.width),
+        x: Number(cav.x) + Number(cav.width) * scale,
         y: Number(cav.y),
       };
     } else if (name === "bl") {
       control_pos = {
         x: Number(cav.x),
-        y: Number(cav.y) + Number(cav.height),
+        y: Number(cav.y) + Number(cav.height) * scale,
       };
     } else if (name === "br") {
       control_pos = {
-        x: Number(cav.x) + Number(cav.width),
-        y: Number(cav.y) + Number(cav.height),
+        x: Number(cav.x) + Number(cav.width) * scale,
+        y: Number(cav.y) + Number(cav.height) * scale,
       };
     }
-
-    const proportion = cav.width / cav.height;
+    console.log(control_pos);
+    const proportion = (cav.width * scale) / (cav.height * scale);
     let centerPosition = {
-      x: cav.x + cav.width / 2,
-      y: cav.y + cav.height / 2,
+      x: cav.x + (cav.width * scale) / 2,
+      y: cav.y + (cav.height * scale) / 2,
     };
-
+    console.log("center: " + centerPosition.x + "y" + centerPosition.y);
     let control = calculateRotatedPointCoordinate(
       control_pos,
       centerPosition,
       cav.rotate
     );
+    console.log("control: " + control.x + "y" + control.y);
 
     let cdom = document.querySelector("#canvas_container");
 
     const { x, y }: any = cdom?.getBoundingClientRect();
+
     const currentPosition = {
       x: e.clientX - x,
       y: e.clientY - y,
     };
+    console.log(
+      "currentPosition: x" + currentPosition.x + "y " + currentPosition.y
+    );
+    console.log("getBoundingClientRect: x" + x + "y " + y);
 
     const symmetricPoint = {
       x: centerPosition.x - (control.x - centerPosition.x),
       y: centerPosition.y - (control.y - centerPosition.y),
     };
+    console.log(
+      "symmetricPoint: x" + symmetricPoint.x + "y " + symmetricPoint.y
+    );
+
     let newCenterPoint = getCenterPoint(currentPosition, symmetricPoint);
+    console.log(
+      "newCenterPoint: x" + newCenterPoint.x + "y " + newCenterPoint.y
+    );
     let newControlPoint = calculateRotatedPointCoordinate(
       currentPosition,
       newCenterPoint,
       -cav.rotate
+    );
+    console.log(
+      "newControlPoint: x" + newControlPoint.x + "y " + newControlPoint.y
     );
 
     let newSymmetricPoint = calculateRotatedPointCoordinate(
@@ -89,10 +109,14 @@ function CornerPoint({ id, name, style }: any) {
       newCenterPoint,
       -cav.rotate
     );
+    console.log(
+      "newSymmetricPoint: x" + newSymmetricPoint.x + "y " + newSymmetricPoint.y
+    );
 
     let newWidth = Math.abs(newControlPoint.x - newSymmetricPoint.x);
     let newHeight = Math.abs(newSymmetricPoint.y - newControlPoint.y);
-
+    console.log("newWidth " + newWidth + "newHeight " + newHeight);
+    // return;
     if (newWidth / newHeight > proportion) {
       newControlPoint.x += ["tl", "bl"].includes(name)
         ? Math.abs(newWidth - newHeight * proportion)

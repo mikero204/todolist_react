@@ -4,6 +4,7 @@ import {
   DELETE_CANVAS_OBJ,
   CHANGE_ACTIVE,
   RESIZE_CANVAS_OBJ,
+  RESET,
   MOVE_CANVAS_OBJ,
   ROTATE_CANVAS_OBJ,
   DELETE_OBJ,
@@ -27,7 +28,8 @@ type canvas_paramsType = {
   innerCanvasWidth: Number;
   innerCanvasHeight: Number;
   Canvas_transformY: Number;
-  canvas_scale: Number;
+  Canvas_scale: Number;
+  Canvas_obj_size: Number;
 };
 type canvasActionType = {
   type: string;
@@ -41,6 +43,10 @@ export const CanvasReducer = (
   let newState: canvasStateType = JSON.parse(JSON.stringify(state));
 
   switch (action.type) {
+    case RESET:
+      newState.canvasObj_list = [];
+      newState.canvasObj_list.push(action.payload);
+      return newState;
     case ADD_CANVAS_OBJ:
       return newState;
     case DELETE_CANVAS_OBJ:
@@ -132,12 +138,51 @@ export const CanvasReducer = (
     }
     case CANVAS_PARAMS: {
       let obj = action.payload;
+
+      newState.canvasObj_list.forEach((ele) => {
+        ele.width = (Number(ele.width) * obj.Canvas_obj_size).toString();
+        ele.height = (Number(ele.height) * obj.Canvas_obj_size).toString();
+      });
       newState.canvas_params = { ...obj };
       return newState;
     }
-    case CANVAS_PARAMS: {
+    case "CANVAS_SCALE": {
+      // let obj = action.payload;
+      // let oldstate = state.canvas_params;
+      // newState.canvas_params = { ...oldstate, ...obj };
+      // return newState;
       let obj = action.payload;
-      newState.canvas_params = { ...obj };
+      let oldstate = state.canvas_params;
+      const scale = obj.Canvas_scale;
+      const width = (newState.canvas_params.innerCanvasWidth as any) * scale;
+      const height = (newState.canvas_params.innerCanvasHeight as any) * scale;
+      newState.canvas_params = {
+        ...oldstate,
+        ...obj,
+        innerCanvasWidth: Math.max(400, Math.min(width, 780)),
+        innerCanvasHeight: Math.max(300, Math.min(height, 580)),
+      };
+
+      const innerwidth = newState.canvas_params.innerCanvasWidth;
+      const innerheight = newState.canvas_params.innerCanvasHeight;
+      if (
+        innerwidth < 780 &&
+        innerheight < 580 &&
+        innerwidth > 400 &&
+        innerheight > 300
+      ) {
+        let w = Number(oldstate.innerCanvasWidth) - width;
+        let h = Number(oldstate.innerCanvasHeight) - height;
+        console.log(w);
+        console.log(h);
+        newState.canvasObj_list.forEach((ele) => {
+          ele.width = (Number(ele.width) * scale).toString();
+          ele.height = (Number(ele.height) * scale).toString();
+          ele.x = ele.x + w;
+          ele.y = ele.y + h;
+        });
+      }
+
       return newState;
     }
     default:

@@ -3,7 +3,7 @@ import { useWindowSize } from "./hooks/useWindowSize";
 import CanvasObj from "./CanvasObj";
 import { CanvasContext } from "./context/CanvasContext";
 import { CanvasReducer, canvasStateType } from "./context/CanvasReducer";
-import { CANVAS_PARAMS } from "./Constants";
+import { CANVAS_PARAMS, RESET } from "./Constants";
 import uuid from "react-uuid";
 function Canvas() {
   const size = useWindowSize();
@@ -39,7 +39,8 @@ function Canvas() {
       innerCanvasWidth: 0,
       innerCanvasHeight: 0,
       Canvas_transformY: 0,
-      canvas_scale: 0,
+      Canvas_scale: 0,
+      Canvas_obj_size: 0,
     },
   };
   const [state, dispatch] = useReducer(CanvasReducer, initState);
@@ -50,6 +51,7 @@ function Canvas() {
     const topheight = size.height * 0.06;
     const centerheight = size.height * 0.88;
     const bottomheight = size.height * 0.06;
+    let Canvas_obj_size;
     let innerCanvasWidth;
     let innerCanvasHeight;
     if (size.width < 600) {
@@ -58,17 +60,20 @@ function Canvas() {
         innerCanvasWidth - innerCanvasWidth / 4,
         300
       );
+      Canvas_obj_size = 1;
     } else {
       innerCanvasWidth = Math.min(size.width - padding * 2, 600);
       innerCanvasHeight = Math.min(
         innerCanvasWidth - innerCanvasWidth / 4,
         450
       );
+      Canvas_obj_size = 2;
     }
 
     const Canvas_transformY =
       centerheight / 2 - innerCanvasHeight / 2 - padding - 30;
-    const canvas_scale = 1;
+    const Canvas_scale = 1;
+
     dispatch({
       type: CANVAS_PARAMS,
       payload: {
@@ -81,14 +86,15 @@ function Canvas() {
         innerCanvasWidth,
         innerCanvasHeight,
         Canvas_transformY,
-        canvas_scale,
+        Canvas_scale,
+        Canvas_obj_size,
       },
     });
   }, [size]);
 
   //1.得到使用者螢幕寬度
   //2.改變畫板寬度及高度
-
+  const scale = `scale(1)`;
   return (
     <CanvasContext.Provider
       value={{
@@ -117,10 +123,23 @@ function Canvas() {
         }}
       >
         <div
+          onWheel={(event) => {
+            let scale =
+              Number(state.canvas_params.Canvas_scale) + event.deltaY * -0.01;
+            // Restrict scale
+            scale = Math.min(Math.max(0.9, scale), 1.1);
+            console.log(scale);
+            dispatch({
+              type: "CANVAS_SCALE",
+              payload: {
+                Canvas_scale: scale,
+              },
+            });
+          }}
           style={{
             width: state.canvas_params.innerCanvasWidth + "px",
             height: state.canvas_params.innerCanvasHeight + "px",
-            transform: `translate(0px,${state.canvas_params.Canvas_transformY}px) scale(${state.canvas_params.canvas_scale})`,
+            transform: `translate(0px,${state.canvas_params.Canvas_transformY}px) ${scale}`,
             border: "1px solid black",
             margin: "0 auto",
             backgroundColor: "white",
