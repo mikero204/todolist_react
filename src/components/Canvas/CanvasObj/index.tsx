@@ -90,9 +90,15 @@ function CanvasObj({ ele }: any) {
 export default CanvasObj;
 function CanvasHoverToolBar({ ele }: any) {
   const [state, dispatch] = useCanvasContext();
-  const transform = `translate(${ele.x + Number(ele.width) / 3}px, ${
-    ele.y - 60
-  }px)`;
+  const position = {
+    top: ele.y - 40 + "px",
+    left:
+      ele.x +
+      // state.canvas_params.innerCanvasWidth / 10 / 4 +
+      ele.width / 3 +
+      "px",
+  };
+
   const copyObj = () => {
     dispatch({ type: COPY_OBJ, payload: { id: ele.id } });
   };
@@ -106,12 +112,13 @@ function CanvasHoverToolBar({ ele }: any) {
         position: "absolute",
         justifyContent: "center",
         alignItems: "center",
-        width: "80px",
-        height: "40px",
+        width: state.canvas_params.innerCanvasWidth / 10 + "px",
+        height: state.canvas_params.innerCanvasWidth / 10 / 2 + "px",
         boxShadow:
           "0 0 0 1px rgba(64,87,109,0.07),0 2px 12px rgba(53,71,90,0.2)",
         borderRadius: "10rem",
-        transform: transform,
+        ...position,
+        // transform: transform,
       }}
     >
       <div

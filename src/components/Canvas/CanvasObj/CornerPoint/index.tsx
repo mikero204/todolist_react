@@ -2,6 +2,8 @@ import { useCanvasContext } from "../../hooks/useCanvasContext";
 import { useWindowSize } from "../../hooks/useWindowSize";
 import { useEffect } from "react";
 import styles from "../index.module.scss";
+import { useLongPress } from "use-long-press";
+
 function CornerPoint({ id, name, style }: any) {
   const [state, dispatch] = useCanvasContext();
   const size = useWindowSize();
@@ -17,7 +19,7 @@ function CornerPoint({ id, name, style }: any) {
     window.addEventListener("mouseup", mousecheck_up);
   };
   const mousecheck_move = (e: any) => {
-    let cav = state.find((ele: any) => {
+    let cav = state.canvasObj_list.find((ele: any) => {
       return ele.id === id;
     });
     let control_pos;
@@ -54,12 +56,15 @@ function CornerPoint({ id, name, style }: any) {
       centerPosition,
       cav.rotate
     );
-    const topheight = size.height * 0.15;
+
+    let cdom = document.querySelector("#canvas_container");
+
+    const { x, y }: any = cdom?.getBoundingClientRect();
     const currentPosition = {
-      x: e.clientX - 16,
-      y: e.clientY - topheight - 16,
+      x: e.clientX - x,
+      y: e.clientY - y,
     };
-    console.log(e);
+
     const symmetricPoint = {
       x: centerPosition.x - (control.x - centerPosition.x),
       y: centerPosition.y - (control.y - centerPosition.y),
@@ -121,8 +126,8 @@ function CornerPoint({ id, name, style }: any) {
           id,
           width: newWidth,
           height: newHeight,
-          x: Math.min(newControlPoint.x, newSymmetricPoint.x),
-          y: Math.min(newSymmetricPoint.y, newControlPoint.y),
+          x: Math.max(0, Math.min(newControlPoint.x, newSymmetricPoint.x)),
+          y: Math.max(0, Math.min(newSymmetricPoint.y, newControlPoint.y)),
         },
       });
     }
@@ -134,11 +139,12 @@ function CornerPoint({ id, name, style }: any) {
   };
 
   const touch_resize = (e: any) => {
+    console.log(1);
     window.addEventListener("touchmove", touchcheck_move);
     window.addEventListener("touchend", touchcheck_end);
   };
   const touchcheck_move = (e: any) => {
-    let cav = state.find((ele: any) => {
+    let cav = state.canvasObj_list.find((ele: any) => {
       return ele.id === id;
     });
     let control_pos;
@@ -175,9 +181,13 @@ function CornerPoint({ id, name, style }: any) {
       centerPosition,
       cav.rotate
     );
+    let cdom = document.querySelector("#canvas_container");
+
+    const { x, y }: any = cdom?.getBoundingClientRect();
+
     const currentPosition = {
-      x: e.touches[0].pageX,
-      y: e.touches[0].pageY,
+      x: e.touches[0].clientX - x,
+      y: e.touches[0].clientY - y,
     };
     const symmetricPoint = {
       x: centerPosition.x - (control.x - centerPosition.x),
@@ -253,7 +263,8 @@ function CornerPoint({ id, name, style }: any) {
 
   return (
     <div
-      onTouchStart={touch_resize}
+      id={id + name}
+      onClick={touch_resize}
       onMouseDown={mouse_resize}
       className={styles.corner}
       style={style}
