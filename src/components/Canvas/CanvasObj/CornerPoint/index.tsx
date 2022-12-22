@@ -1,12 +1,19 @@
 import { useCanvasContext } from "../../hooks/useCanvasContext";
-import { useWindowSize } from "../../hooks/useWindowSize";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "../index.module.scss";
 import { useLongPress } from "use-long-press";
 
 function CornerPoint({ id, name, style }: any) {
   const [state, dispatch] = useCanvasContext();
-  const size = useWindowSize();
+  const ref = useRef(null);
+  // useEffect(() => {
+  //   if (ref.current) {
+  //     const dom: HTMLDivElement = ref.current;
+  //     const { x, y } = dom.getBoundingClientRect();
+  //     dispatch({ type: "UPDATE_CANVAS_OBJ", payload: { id, name, x, y } });
+  //   }
+  // }, [style]);
+
   //clear listener
   useEffect(() => {
     return () => {
@@ -14,6 +21,7 @@ function CornerPoint({ id, name, style }: any) {
       mousecheck_up();
     };
   }, []);
+
   const mouse_resize = (e: any) => {
     window.addEventListener("mousemove", mousecheck_move);
     window.addEventListener("mouseup", mousecheck_up);
@@ -139,7 +147,7 @@ function CornerPoint({ id, name, style }: any) {
   };
 
   const touch_resize = (e: any) => {
-    console.log(1);
+    e.stopPropagation();
     window.addEventListener("touchmove", touchcheck_move);
     window.addEventListener("touchend", touchcheck_end);
   };
@@ -263,11 +271,12 @@ function CornerPoint({ id, name, style }: any) {
 
   return (
     <div
+      ref={ref}
       id={id + name}
-      onClick={touch_resize}
+      onTouchStart={touch_resize}
       onMouseDown={mouse_resize}
       className={styles.corner}
-      style={style}
+      style={{ ...style, backgroundColor: "rgb(139, 61, 255)", transform: "" }}
     ></div>
   );
 }

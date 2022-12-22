@@ -34,6 +34,14 @@ export const useDraggable = (ele: any) => {
       })
       .styleCursor(false)
       .on(
+        "touchstart",
+        (event) => {
+          console.log(event);
+          event.stopPropagation();
+        },
+        false
+      )
+      .on(
         "dragmove",
         (event) => {
           dispatch({

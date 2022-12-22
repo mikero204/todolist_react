@@ -23,6 +23,10 @@ export type canvasObj = {
   lock: boolean;
   color?: string;
   resizing?: boolean;
+  tl?: any;
+  tr?: any;
+  bl?: any;
+  br?: any;
 };
 
 export const CanvasContext = createContext<initContext>(initState);

@@ -43,14 +43,44 @@ function CanvasObj({ ele }: any) {
     width: width + "px",
     height: height + "px",
   };
-  if (showborder && !active) {
-    style.border = "2px solid #8b3dff";
-  }
-  if (ele.active) {
-    style.border = "2px solid #8b3dff";
-  }
+  // if (showborder) {
+  //   style.border = "2px solid #8b3dff";
+  // }
+  // if (ele.active) {
+  //   style.border = "2px solid #8b3dff";
+  // }
+  // let h = (height - height*1.1)/2
+  // let w = (width - width*1.1)
+  // const outlinebox_transform ={
+  //   x:,y:,width:,height:
+  // }
   return (
     <>
+      <div>
+        {ele.active ? (
+          <>
+            <CanvasHoverToolBar ele={ele} />
+          </>
+        ) : null}
+        {ele.active ? (
+          <>
+            <CanvasObjOutLineBox
+              style={{
+                position: "absolute",
+                transform: `translate(${x - 6}px, ${
+                  y - 6
+                }px)  rotate(${rotate}deg) `,
+                width: Number(width) + 12,
+                height: Number(height) + 12,
+              }}
+              id={id}
+              ele={ele}
+              className={styles.box}
+            />
+          </>
+        ) : null}
+      </div>
+
       <div
         className={styles.box}
         ref={draggable.ref}
@@ -62,27 +92,7 @@ function CanvasObj({ ele }: any) {
         data-id={id}
       >
         <img className={styles.img_drag} src={ele.img} />
-        {ele.active ? (
-          <>
-            <CanvasObjOutLineBox
-              style={{
-                position: "absolute",
-                // transform: `translate(${x}px, ${y}px)  rotate(${rotate}deg) `,
-                width: width,
-                height: height,
-              }}
-              id={id}
-              ele={ele}
-              className={styles.box}
-            />
-          </>
-        ) : null}
       </div>
-      {ele.active ? (
-        <>
-          <CanvasHoverToolBar ele={ele} />
-        </>
-      ) : null}
     </>
   );
 }
@@ -90,6 +100,7 @@ function CanvasObj({ ele }: any) {
 export default CanvasObj;
 function CanvasHoverToolBar({ ele }: any) {
   const [state, dispatch] = useCanvasContext();
+
   const position = {
     top: ele.y - 40 + "px",
     left:

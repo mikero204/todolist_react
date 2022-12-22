@@ -21,6 +21,10 @@ function Canvas() {
     color: "red",
     lock: false,
     mouse_event_active: false,
+    tl: {},
+    tr: {},
+    bl: {},
+    br: {},
   };
 
   const initState: canvasStateType = {
@@ -46,11 +50,22 @@ function Canvas() {
     const topheight = size.height * 0.06;
     const centerheight = size.height * 0.88;
     const bottomheight = size.height * 0.06;
-    const innerCanvasWidth = Math.min(size.width - padding * 2, 400);
-    const innerCanvasHeight = Math.min(
-      innerCanvasWidth - innerCanvasWidth / 4,
-      300
-    );
+    let innerCanvasWidth;
+    let innerCanvasHeight;
+    if (size.width < 600) {
+      innerCanvasWidth = Math.min(size.width - padding * 2, 400);
+      innerCanvasHeight = Math.min(
+        innerCanvasWidth - innerCanvasWidth / 4,
+        300
+      );
+    } else {
+      innerCanvasWidth = Math.min(size.width - padding * 2, 600);
+      innerCanvasHeight = Math.min(
+        innerCanvasWidth - innerCanvasWidth / 4,
+        450
+      );
+    }
+
     const Canvas_transformY =
       centerheight / 2 - innerCanvasHeight / 2 - padding - 30;
     const canvas_scale = 1;

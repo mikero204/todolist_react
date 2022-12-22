@@ -56,6 +56,15 @@ export const CanvasReducer = (
       });
       return newState;
     }
+    case UPDATE_CANVAS_OBJ: {
+      let obj = action.payload;
+      let findobj = state.canvasObj_list.find((element) => {
+        return element.id === obj.id;
+      }) as any;
+      findobj[obj.name] = obj;
+      // console.log(findobj);
+      return state;
+    }
     case MOVE_CANVAS_OBJ: {
       let obj = action.payload;
       const { id, x, y } = obj;
@@ -119,6 +128,11 @@ export const CanvasReducer = (
       });
 
       newState.canvasObj_list.splice(findobjIndex, 1);
+      return newState;
+    }
+    case CANVAS_PARAMS: {
+      let obj = action.payload;
+      newState.canvas_params = { ...obj };
       return newState;
     }
     case CANVAS_PARAMS: {
