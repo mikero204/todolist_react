@@ -126,9 +126,10 @@ function Canvas() {
           onWheel={(event) => {
             let scale =
               Number(state.canvas_params.Canvas_scale) + event.deltaY * -0.01;
+            console.log(state.canvas_params.Canvas_scale);
             // Restrict scale
             scale = Math.min(Math.max(0.9, scale), 1.1);
-            console.log(scale);
+
             dispatch({
               type: "CANVAS_SCALE",
               payload: {
