@@ -179,11 +179,11 @@ function Canvas() {
             <div
               ref={ref}
               style={{
-                width: 100 + "%",
+                width: state.canvas_params.canvas_width + "px",
                 height: 80 + "%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                position: "relative",
+                // display: "flex",
+                flexDirection: "column",
                 backgroundColor: "rgba(43,59,74,0.1)",
                 overflow: "auto",
               }}
@@ -194,18 +194,57 @@ function Canvas() {
                   height: state.canvas_params.canvas_paper_height + "px",
                   backgroundColor: "white",
                   position: "relative",
+                  marginLeft:
+                    Math.max(
+                      (state.canvas_params.canvas_width -
+                        state.canvas_params.canvas_paper_width) /
+                        2,
+                      24
+                    ) + "px",
+                  marginRight:
+                    Math.max(
+                      (state.canvas_params.canvas_width -
+                        state.canvas_params.canvas_paper_width) /
+                        2,
+                      24
+                    ) + "px",
+
+                  marginTop:
+                    Math.max(
+                      (state.canvas_params.canvas_width -
+                        state.canvas_params.canvas_paper_width) /
+                        2,
+                      12
+                    ) + "px",
+                  marginBottom:
+                    Math.max(
+                      (state.canvas_params.canvas_width -
+                        state.canvas_params.canvas_paper_width) /
+                        2,
+                      12
+                    ) + "px",
                 }}
               >
                 <div
                   style={{
                     width: 800 + "px",
                     height: 600 + "px",
-                    transform: `scale(${
+                    transform: ` scale(${
                       state.canvas_params.canvas_scale / 100
                     })`,
                     transformOrigin: "0 0",
+                    position: "absolute",
                   }}
-                ></div>
+                >
+                  <div
+                    style={{
+                      width: 800 + "px",
+                      height: 600 + "px",
+                    }}
+                  >
+                    <h1>測試</h1>
+                  </div>
+                </div>
               </div>
             </div>
             <div style={{ height: 20 + "%", width: 100 + "%" }}>
