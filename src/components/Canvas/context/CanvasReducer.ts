@@ -19,17 +19,19 @@ export type canvasStateType = {
   canvas_params: canvas_paramsType;
 };
 type canvas_paramsType = {
-  appwidth: Number;
-  appheight: Number;
-  padding: Number;
-  topheight: Number;
-  centerheight: Number;
-  bottomheight: Number;
-  innerCanvasWidth: Number;
-  innerCanvasHeight: Number;
-  Canvas_transformY: Number;
-  Canvas_scale: Number;
-  Canvas_obj_size: Number;
+  appwidth: number;
+  appheight: number;
+  header_width: number;
+  header_height: number;
+  tool_view_width: number;
+  tool_view_height: number;
+  canvas_width: number;
+  canvas_topheight: number;
+  canvas_centerheight: number;
+  canvas_bottomheight: number;
+  canvas_scale: number;
+  canvas_paper_width: number;
+  canvas_paper_height: number;
 };
 type canvasActionType = {
   type: string;
@@ -138,63 +140,48 @@ export const CanvasReducer = (
     }
     case CANVAS_PARAMS: {
       let obj = action.payload;
-
-      newState.canvasObj_list.forEach((ele) => {
-        ele.width = (Number(ele.width) * obj.Canvas_obj_size).toString();
-        ele.height = (Number(ele.height) * obj.Canvas_obj_size).toString();
-      });
       newState.canvas_params = { ...obj };
       return newState;
     }
     case "CANVAS_SCALE": {
-      // let obj = action.payload;
-      // let oldstate = state.canvas_params;
-      // newState.canvas_params = { ...oldstate, ...obj };
-      // return newState;
       let obj = action.payload;
-      console.log(obj);
-      let oldstate = state.canvas_params;
-      const scale = obj.Canvas_scale;
-      const width = (newState.canvas_params.innerCanvasWidth as any) * scale;
-      const height = (newState.canvas_params.innerCanvasHeight as any) * scale;
-      newState.canvas_params = {
-        ...oldstate,
-        ...obj,
-        // innerCanvasWidth: Math.max(400, Math.min(width, 780)),
-        // innerCanvasHeight: Math.max(300, Math.min(height, 580)),
-        innerCanvasWidth: width,
-        innerCanvasHeight: height,
-      };
+      switch (obj.action) {
+        case "add": {
+          let check = newState.canvas_params.canvas_scale < 500 ? true : false;
+          if (check) {
+            newState.canvas_params.canvas_scale = Math.min(
+              Math.floor(newState.canvas_params.canvas_scale * 1.2),
+              500
+            );
+          } else {
+            newState.canvas_params.canvas_scale = 500;
+          }
+          newState.canvas_params.canvas_paper_width =
+            (800 * newState.canvas_params.canvas_scale) / 100;
+          newState.canvas_params.canvas_paper_height =
+            (600 * newState.canvas_params.canvas_scale) / 100;
+          break;
+        }
 
-      const innerwidth = newState.canvas_params.innerCanvasWidth;
-      const innerheight = newState.canvas_params.innerCanvasHeight;
-      // if (
-      //   innerwidth < 780 &&
-      //   innerheight < 580 &&
-      //   innerwidth > 400 &&
-      //   innerheight > 300
-      // ) {
-      //   let w = Number(oldstate.innerCanvasWidth) - width;
-      //   let h = Number(oldstate.innerCanvasHeight) - height;
-      //   console.log(w);
-      //   console.log(h);
-      //   newState.canvasObj_list.forEach((ele) => {
-      //     ele.width = (Number(ele.width) * scale).toString();
-      //     ele.height = (Number(ele.height) * scale).toString();
-      //     ele.x = ele.x * scale;
-      //     ele.y = ele.y * scale;
-      //   });
-      // }
-      let w = Number(oldstate.innerCanvasWidth) - width;
-      let h = Number(oldstate.innerCanvasHeight) - height;
-      // console.log(w);
-      // console.log(h);
-      newState.canvasObj_list.forEach((ele) => {
-        ele.width = (Number(ele.width) * scale).toString();
-        ele.height = (Number(ele.height) * scale).toString();
-        // ele.x = ele.x * scale;
-        // ele.y = ele.y * scale;
-      });
+        case "reduce": {
+          let check = newState.canvas_params.canvas_scale > 10 ? true : false;
+          if (check) {
+            newState.canvas_params.canvas_scale = Math.max(
+              Math.floor(newState.canvas_params.canvas_scale * 0.8),
+              10
+            );
+          } else {
+            newState.canvas_params.canvas_scale = 10;
+          }
+
+          newState.canvas_params.canvas_paper_width =
+            (800 * newState.canvas_params.canvas_scale) / 100;
+          newState.canvas_params.canvas_paper_height =
+            (600 * newState.canvas_params.canvas_scale) / 100;
+          break;
+        }
+      }
+
       return newState;
     }
     default:
