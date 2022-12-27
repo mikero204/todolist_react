@@ -204,21 +204,20 @@ function Canvas() {
             width: 300 + "px",
             height: 200 + "px",
             overflow: "scroll",
-            touchAction: "pan-x pan-y",
+            touchAction: "pan-x pan-y pinch-zoom",
             backgroundColor: "GrayText",
           }}
         >
           <div
             ref={ref}
             style={{
-              padding: 20 + "px",
               width: custom.width + 100 + "px",
               height: custom.height + 100 + "px",
               backgroundColor: "grey",
-              touchAction: "pan-x pan-y pinch-zoom",
               display: "flex",
               flexWrap: "nowrap",
               whiteSpace: "nowrap",
+              margin: "auto",
             }}
           >
             <div
