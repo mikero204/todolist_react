@@ -14,6 +14,7 @@ import uuid from "react-uuid";
 import { useGesture } from "@use-gesture/react";
 
 function Canvas() {
+  const [custom, setCustom] = useState({ width: 100, height: 100 });
   const bind = useGesture({
     onPinch: (state) => doSomethingWith(state),
     onWheel: (state) => doSomethingWith(state),
@@ -190,28 +191,62 @@ function Canvas() {
       }}
     >
       <div
-        {...bind()}
         style={{
-          width: 300 + "px",
-          height: 200 + "px",
-          overflow: "scroll",
-          touchAction: "pan-x pan-y",
-          backgroundColor: "GrayText",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
         }}
       >
         <div
-          ref={ref}
+          {...bind()}
           style={{
-            padding: 20 + "px",
-            width: 800 + "px",
-            height: 800 + "px",
-            backgroundColor: "white",
-            touchAction: "pan-x pan-y pinch-zoom",
+            width: 300 + "px",
+            height: 200 + "px",
+            overflow: "scroll",
+            touchAction: "pan-x pan-y",
+            backgroundColor: "GrayText",
           }}
         >
-          <h1>test</h1>
+          <div
+            ref={ref}
+            style={{
+              padding: 20 + "px",
+              width: custom.width + 100 + "px",
+              height: custom.height + 100 + "px",
+              backgroundColor: "grey",
+              touchAction: "pan-x pan-y pinch-zoom",
+              display: "flex",
+              flexWrap: "nowrap",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <div
+              style={{
+                width: custom.width + "px",
+                height: custom.height + "px",
+                backgroundColor: "white",
+                padding: "15px",
+                margin: "auto",
+                flexShrink: "0",
+              }}
+            >
+              <h1>test</h1>
+            </div>
+          </div>
         </div>
+        <button
+          onClick={(e: any) => {
+            setCustom({
+              height: custom.height + 100,
+              width: custom.width + 100,
+            });
+          }}
+        >
+          +
+        </button>
       </div>
+
       {/* <div>
         <div
           style={{
