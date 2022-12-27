@@ -32,6 +32,8 @@ type canvas_paramsType = {
   canvas_scale: number;
   canvas_paper_width: number;
   canvas_paper_height: number;
+  canvas_canva: number;
+  canvas_canva_bottom: number;
 };
 type canvasActionType = {
   type: string;
@@ -150,7 +152,7 @@ export const CanvasReducer = (
           let check = newState.canvas_params.canvas_scale < 500 ? true : false;
           if (check) {
             newState.canvas_params.canvas_scale = Math.min(
-              Math.floor(newState.canvas_params.canvas_scale * 1.2),
+              Math.floor(newState.canvas_params.canvas_scale * 1.1),
               500
             );
           } else {
