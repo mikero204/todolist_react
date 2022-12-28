@@ -11,34 +11,61 @@ import { CanvasContext } from "./context/CanvasContext";
 import { CanvasReducer, canvasStateType } from "./context/CanvasReducer";
 import { CANVAS_PARAMS, RESET } from "./Constants";
 import uuid from "react-uuid";
-import { useGesture } from "@use-gesture/react";
-
+import { FullGestureState, useGesture } from "@use-gesture/react";
+import _ from "lodash";
 function Canvas() {
   const [custom, setCustom] = useState({ width: 100, height: 100 });
-  const bind = useGesture({
-    onPinch: (state) => doSomethingWith(state),
-    onWheel: (state) => doSomethingWith(state),
-  });
+  const ref = useRef(null);
+  const bind = useGesture(
+    {
+      onPinch: (state) => pinch_scale(state),
+      onWheel: (state) => wheel_scale(state),
+      onDrag: (state) => drag(state),
+    },
+    { target: ref }
+  );
 
-  const doSomethingWith = (state: any) => {
-    console.log(state);
-    // let last = state.lastOffset[0];
-    // let now = state.offset[0];
-    // if (last - now < 0) {
-    //   dispatch({
-    //     type: "CANVAS_SCALE",
-    //     payload: {
-    //       action: "add",
-    //     },
-    //   });
-    // } else {
-    //   dispatch({
-    //     type: "CANVAS_SCALE",
-    //     payload: {
-    //       action: "reduce",
-    //     },
-    //   });
-    // }
+  const pinch_scale = (state: Omit<FullGestureState<"pinch">, "event">) => {
+    // console.log("pinch ", state);
+  };
+  const drag = (
+    state: Omit<FullGestureState<"drag">, "event"> & {
+      event: PointerEvent | MouseEvent | TouchEvent | KeyboardEvent;
+    }
+  ) => {
+    let x = state.movement[0];
+    let y = state.movement[1];
+    dispatch({ type: "CANVAS_TRANSFORM", payload: { x, y } });
+  };
+  const wheel_scale = (
+    state: Omit<FullGestureState<"wheel">, "event"> & {
+      event: WheelEvent;
+    }
+  ) => {
+    if (!state.active) return;
+    if (!state.ctrlKey) return;
+    let scaleStatus = state.movement[1] > 0 ? true : false;
+    if (scaleStatus) {
+      //scale smaller
+      dispatch({
+        type: "CANVAS_SCALE",
+        payload: {
+          action: "reduce",
+          pointX: state.event.x,
+          pointY: state.event.y,
+        },
+      });
+    } else {
+      //scale larger
+      dispatch({
+        type: "CANVAS_SCALE",
+        payload: {
+          action: "add",
+          pointX: state.event.x,
+          pointY: state.event.y,
+        },
+      });
+    }
   };
   const size = useWindowSize();
   const obj1 = {
@@ -68,96 +95,41 @@ function Canvas() {
       appheight: 0,
       header_width: 0,
       header_height: 0,
-      tool_view_width: 0,
-      tool_view_height: 0,
-      canvas_width: 0,
-      canvas_topheight: 0,
-      canvas_centerheight: 0,
-      canvas_bottomheight: 0,
-      canvas_scale: 0,
-      canvas_paper_width: 0,
-      canvas_paper_height: 0,
-      canvas_canva: 0,
-      canvas_canva_bottom: 0,
+      main_width: 0,
+      main_height: 0,
+      main_footer_width: 0,
+      main_footer_height: 0,
+      paper_padding: 0,
+      rate: 0,
+      paper_width: 0,
+      paper_height: 0,
+      scale: 0,
+      transform_x: 0,
+      transform_y: 0,
+      screen_width: 0,
+      screen_height: 0,
     },
   };
-  const ref = useRef(null);
   const [state, dispatch] = useReducer(CanvasReducer, initState);
-  // useEffect(() => {
-  //   if (ref.current) {
-  //     (ref.current as any).addEventListener("wheel", handleWheel, {
-  //       passive: false,
-  //     });
-  //     return () => {
-  //       (ref.current as any).removeEventListener("wheel", handleWheel, {
-  //         passive: false,
-  //       });
-  //     };
-  //   }
-  // }, []);
-  useEffect(() => {
-    if (ref.current) {
-      (ref.current as any).addEventListener(
-        "touchstart",
-        (e: any) => {
-          if (e.touches.length > 1) {
-            console.log(1);
-            e.preventDefault();
-          }
-        },
-        {
-          passive: false,
-        }
-      );
-    }
-  }, []);
-  const handleWheel = (event: MouseEvent | any) => {
-    event.preventDefault();
-    if (event.ctrlKey) {
-      // (ref.current as any).scrollTop =
-      //   (event.clientY * state.canvas_params.canvas_scale) / 100;
-      // (ref.current as any).scrollLeft =
-      //   (event.clientX * state.canvas_params.canvas_scale) / 100;
 
-      if (event.deltaY > 0) {
-        dispatch({
-          type: "CANVAS_SCALE",
-          payload: {
-            action: "reduce",
-          },
-        });
-      } else {
-        dispatch({
-          type: "CANVAS_SCALE",
-          payload: {
-            action: "add",
-          },
-        });
-      }
-    }
-  };
   useEffect(() => {
     const appwidth = size.width;
     const appheight = size.height;
-    const header_height = size.height * 0.06;
+    const header_height = 48;
     const header_width = appwidth;
-    const tool_view_height = appheight - header_height;
-    const tool_view_width = 72;
-    const canvas_topheight = tool_view_height * 0.06;
-    const canvas_centerheight = tool_view_height * 0.88;
-    const canvas_center_canva_height = tool_view_height * 0.88 * 0.8;
-    const canvas_bottomheight = tool_view_height * 0.06;
-    const canvas_width = appwidth - tool_view_width;
-    const canvas_canva = canvas_centerheight * 0.8;
-    const canvas_canva_bottom = canvas_centerheight * 0.2;
-    let canvas_scale = 100;
-    let canvas_paper_height = Math.min(
-      canvas_width * 0.5,
-      canvas_center_canva_height * 0.9
-    );
-    let canvas_paper_width = canvas_paper_height * 1.333333;
-    canvas_scale = (canvas_paper_height / 600) * 100;
-
+    const main_width = appwidth;
+    const main_height = appheight;
+    const main_footer_width = appwidth;
+    const main_footer_height = 80;
+    const paper_padding = `20px 20px ${main_footer_height + 20}px 20px`;
+    const rate = 1.333333;
+    const paper_width = appwidth - 40;
+    const paper_height = paper_width / rate;
+    const scale = 1;
+    const transform_x = 0;
+    const transform_y = appheight / 2 + header_height - paper_height;
+    const screen_width = paper_width;
+    const screen_height = paper_height;
     dispatch({
       type: CANVAS_PARAMS,
       payload: {
@@ -165,20 +137,40 @@ function Canvas() {
         appheight,
         header_width,
         header_height,
-        tool_view_width,
-        tool_view_height,
-        canvas_width,
-        canvas_topheight,
-        canvas_centerheight,
-        canvas_bottomheight,
-        canvas_scale,
-        canvas_paper_width,
-        canvas_paper_height,
-        canvas_canva,
-        canvas_canva_bottom,
+        main_width,
+        main_height,
+        main_footer_width,
+        main_footer_height,
+        paper_padding,
+        rate,
+        paper_width,
+        paper_height,
+        scale,
+        transform_x,
+        transform_y,
+        screen_width,
+        screen_height,
       },
     });
   }, [size]);
+
+  const {
+    appwidth,
+    appheight,
+    header_width,
+    header_height,
+    main_width,
+    main_height,
+    main_footer_width,
+    main_footer_height,
+    paper_padding,
+    rate,
+    paper_width,
+    paper_height,
+    scale,
+    transform_x,
+    transform_y,
+  } = state.canvas_params;
 
   return (
     <CanvasContext.Provider
@@ -190,60 +182,58 @@ function Canvas() {
         dispatch: dispatch,
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <div
-          {...bind()}
+      <div>
+        <header
           style={{
-            width: 300 + "px",
-            height: 200 + "px",
-            overflow: "scroll",
-            touchAction: "pan-x pan-y pinch-zoom",
-            backgroundColor: "GrayText",
+            width: header_width + "px",
+            height: header_height + "px",
+            backgroundColor: "#e0d9fc",
+            position: "fixed",
+            zIndex: 99999,
+          }}
+        >
+          header
+        </header>
+        <main
+          style={{
+            width: main_width + "px",
+            height: main_height + "px",
+            backgroundColor: "#ebecf0",
+            position: "relative",
           }}
         >
           <div
             ref={ref}
             style={{
-              width: custom.width + 100 + "px",
-              height: custom.height + 100 + "px",
-              backgroundColor: "grey",
-              display: "flex",
-              flexWrap: "nowrap",
-              whiteSpace: "nowrap",
-              margin: "auto",
+              width: "100%",
+              height: "100%",
+              padding: paper_padding,
+              touchAction: "none",
             }}
           >
             <div
               style={{
-                width: custom.width + "px",
-                height: custom.height + "px",
                 backgroundColor: "white",
-                padding: "15px",
-                margin: "auto",
-                flexShrink: "0",
+                width: paper_width + "px",
+                height: paper_height + "px",
+                transform: `translate(${transform_x}px, ${transform_y}px)`,
               }}
             >
               <h1>test</h1>
             </div>
           </div>
-        </div>
-        <button
-          onClick={(e: any) => {
-            setCustom({
-              height: custom.height + 100,
-              width: custom.width + 100,
-            });
-          }}
-        >
-          +
-        </button>
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              width: main_footer_width + "px",
+              height: main_footer_height + "px",
+            }}
+          >
+            footer
+          </div>
+        </main>
       </div>
 
       {/* <div>

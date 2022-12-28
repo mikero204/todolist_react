@@ -23,17 +23,19 @@ type canvas_paramsType = {
   appheight: number;
   header_width: number;
   header_height: number;
-  tool_view_width: number;
-  tool_view_height: number;
-  canvas_width: number;
-  canvas_topheight: number;
-  canvas_centerheight: number;
-  canvas_bottomheight: number;
-  canvas_scale: number;
-  canvas_paper_width: number;
-  canvas_paper_height: number;
-  canvas_canva: number;
-  canvas_canva_bottom: number;
+  main_width: number;
+  main_height: number;
+  main_footer_width: number;
+  main_footer_height: number;
+  paper_padding: number;
+  rate: number;
+  paper_width: number;
+  paper_height: number;
+  scale: number;
+  transform_x: number;
+  transform_y: number;
+  screen_width: number;
+  screen_height: number;
 };
 type canvasActionType = {
   type: string;
@@ -147,43 +149,89 @@ export const CanvasReducer = (
     }
     case "CANVAS_SCALE": {
       let obj = action.payload;
+      let { pointX, pointY } = obj;
+      // console.log(pointX, pointY);
+      let old_width = state.canvas_params.paper_width;
+      let old_height = state.canvas_params.paper_height;
+      let x = newState.canvas_params.transform_x;
+      let y = newState.canvas_params.transform_y;
+      let padding = 20;
       switch (obj.action) {
         case "add": {
-          let check = newState.canvas_params.canvas_scale < 500 ? true : false;
-          if (check) {
-            newState.canvas_params.canvas_scale = Math.min(
-              Math.floor(newState.canvas_params.canvas_scale * 1.1),
-              500
-            );
-          } else {
-            newState.canvas_params.canvas_scale = 500;
-          }
-          newState.canvas_params.canvas_paper_width =
-            (800 * newState.canvas_params.canvas_scale) / 100;
-          newState.canvas_params.canvas_paper_height =
-            (600 * newState.canvas_params.canvas_scale) / 100;
+          let clac_width = Math.min(
+            newState.canvas_params.paper_width * 1.15,
+            1600
+          );
+          let clac_height = Math.min(
+            newState.canvas_params.paper_height * 1.15,
+            1200
+          );
+
+          newState.canvas_params.paper_width = clac_width;
+          newState.canvas_params.paper_height = clac_height;
+
+          // newState.canvas_params.transform_x = x - (clac_width - old_width) / 2;
+          // newState.canvas_params.transform_y =
+          //   y - (clac_height - old_height) / 2;
           break;
         }
 
         case "reduce": {
-          let check = newState.canvas_params.canvas_scale > 10 ? true : false;
-          if (check) {
-            newState.canvas_params.canvas_scale = Math.max(
-              Math.floor(newState.canvas_params.canvas_scale * 0.8),
-              10
-            );
-          } else {
-            newState.canvas_params.canvas_scale = 10;
-          }
-
-          newState.canvas_params.canvas_paper_width =
-            (800 * newState.canvas_params.canvas_scale) / 100;
-          newState.canvas_params.canvas_paper_height =
-            (600 * newState.canvas_params.canvas_scale) / 100;
+          let clac_width = Math.max(
+            newState.canvas_params.screen_width,
+            newState.canvas_params.paper_width * 0.85
+          );
+          let clac_height = Math.max(
+            newState.canvas_params.screen_height,
+            newState.canvas_params.paper_height * 0.85
+          );
+          newState.canvas_params.paper_width = clac_width;
+          newState.canvas_params.paper_height = clac_height;
+          // let x = newState.canvas_params.transform_x;
+          // let y = newState.canvas_params.transform_y;
+          // newState.canvas_params.transform_x = x - (clac_width - old_width) / 2;
+          // newState.canvas_params.transform_y =
+          //   y - (clac_height - old_height) / 2;
           break;
         }
       }
+      return newState;
+    }
+    case "CANVAS_TRANSFORM": {
+      let { x, y } = action.payload;
+      x *= 0.1;
+      y *= 0.1;
+      let {
+        appwidth,
+        appheight,
+        header_height,
+        transform_x,
+        transform_y,
+        paper_width,
+        paper_height,
+        screen_width,
+        screen_height,
+      } = newState.canvas_params;
 
+      if (x > 0) {
+        newState.canvas_params.transform_x = Math.min(transform_x + x, 0);
+      } else {
+        newState.canvas_params.transform_x = Math.max(
+          transform_x + x,
+          screen_width - paper_width
+        );
+      }
+      if (y > 0) {
+        newState.canvas_params.transform_y = Math.min(
+          transform_y + y,
+          (appheight / 2 + header_height) / 2
+        );
+      } else {
+        newState.canvas_params.transform_y = Math.max(
+          transform_y + y,
+          appheight / 2 + header_height - paper_height
+        );
+      }
       return newState;
     }
     default:
