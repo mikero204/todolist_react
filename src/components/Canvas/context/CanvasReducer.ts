@@ -246,7 +246,7 @@ export const CanvasReducer = (
         screen_width,
       } = newState.canvas_params;
       let { direction } = action.payload;
-      const step = 3;
+      const step = 5;
       if (direction[0] > 0) {
         //passive
         newState.canvas_params.transform_x = Math.min(transform_x + step, 0);
