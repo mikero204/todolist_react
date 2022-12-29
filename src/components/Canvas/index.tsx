@@ -11,15 +11,11 @@ import { CanvasContext } from "./context/CanvasContext";
 import { CanvasReducer, canvasStateType } from "./context/CanvasReducer";
 import { CANVAS_PARAMS, RESET } from "./Constants";
 import uuid from "react-uuid";
-import {
-  FullGestureState,
-  useGesture,
-  WebKitGestureEvent,
-} from "@use-gesture/react";
-import _ from "lodash";
+import { FullGestureState, useGesture } from "@use-gesture/react";
+
 function Canvas() {
   const ref = useRef(null);
-  const bind = useGesture(
+  useGesture(
     {
       onPinch: (state) => pinch_scale(state),
       onWheel: (state) => wheel_scale(state),
@@ -30,7 +26,7 @@ function Canvas() {
 
   const pinch_scale = (state: any) => {
     const { x, y } = (state.target as any).getBoundingClientRect();
-    console.log(state);
+
     if (state.direction[0] === 1 && state.direction[1] === 1) {
       dispatch({
         type: "CANVAS_SCALE_POINT",
@@ -57,9 +53,10 @@ function Canvas() {
       event: PointerEvent | MouseEvent | TouchEvent | KeyboardEvent;
     }
   ) => {
-    if (state.touches < 2 && state.type === "pointermove") {
-      let direction = state.direction;
-      dispatch({ type: "CANVAS_TRANSFORM", payload: { direction } });
+    if (state.down) {
+      let x = state.delta[0];
+      let y = state.delta[1];
+      dispatch({ type: "CANVAS_TRANSFORM", payload: { x, y } });
     }
   };
   const wheel_scale = (

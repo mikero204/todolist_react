@@ -245,32 +245,31 @@ export const CanvasReducer = (
         paper_height,
         screen_width,
       } = newState.canvas_params;
-      let { direction } = action.payload;
-      const step = 5;
-      if (direction[0] > 0) {
+      let { x, y } = action.payload;
+
+      if (x > 0) {
         //passive
-        newState.canvas_params.transform_x = Math.min(transform_x + step, 0);
-      } else if (direction[0] < 0) {
+        newState.canvas_params.transform_x = Math.min(transform_x + x, 0);
+      } else if (x < 0) {
         //negative
         newState.canvas_params.transform_x = Math.max(
-          transform_x - step,
+          transform_x + x,
           screen_width - paper_width
         );
       }
-      if (direction[1] > 0) {
+      if (y > 0) {
         //passive
         newState.canvas_params.transform_y = Math.min(
-          transform_y + step,
+          transform_y + y,
           (appheight / 2 + header_height) / 2
         );
-      } else if (direction[1] < 0) {
+      } else if (y < 0) {
         //negative
         newState.canvas_params.transform_y = Math.max(
-          transform_y - step,
+          transform_y + y,
           appheight / 2 + header_height - paper_height
         );
       }
-
       return newState;
     }
     default:
