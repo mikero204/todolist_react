@@ -150,59 +150,93 @@ export const CanvasReducer = (
     case "CANVAS_SCALE": {
       let obj = action.payload;
       let { pointX, pointY } = obj;
-      // console.log(pointX, pointY);
-      let old_width = state.canvas_params.paper_width;
-      let old_height = state.canvas_params.paper_height;
-      let x = newState.canvas_params.transform_x;
-      let y = newState.canvas_params.transform_y;
-      let padding = 20;
       switch (obj.action) {
-        case "add": {
+        case "ADD": {
           let clac_width = Math.min(
-            newState.canvas_params.paper_width * 1.15,
+            newState.canvas_params.paper_width * 1.1,
             1600
           );
           let clac_height = Math.min(
-            newState.canvas_params.paper_height * 1.15,
+            newState.canvas_params.paper_height * 1.1,
             1200
           );
-
           newState.canvas_params.paper_width = clac_width;
           newState.canvas_params.paper_height = clac_height;
-
-          // newState.canvas_params.transform_x = x - (clac_width - old_width) / 2;
-          // newState.canvas_params.transform_y =
-          //   y - (clac_height - old_height) / 2;
+          newState.canvas_params.transform_x +=
+            Math.floor(pointX / 1.1) - pointX;
+          newState.canvas_params.transform_y +=
+            Math.floor(pointY / 1.1) - pointY;
           break;
         }
-
-        case "reduce": {
+        case "REDUCE": {
           let clac_width = Math.max(
             newState.canvas_params.screen_width,
-            newState.canvas_params.paper_width * 0.85
+            newState.canvas_params.paper_width / 1.1
           );
           let clac_height = Math.max(
             newState.canvas_params.screen_height,
-            newState.canvas_params.paper_height * 0.85
+            newState.canvas_params.paper_height / 1.1
           );
           newState.canvas_params.paper_width = clac_width;
           newState.canvas_params.paper_height = clac_height;
-          // let x = newState.canvas_params.transform_x;
-          // let y = newState.canvas_params.transform_y;
-          // newState.canvas_params.transform_x = x - (clac_width - old_width) / 2;
-          // newState.canvas_params.transform_y =
-          //   y - (clac_height - old_height) / 2;
+          if (clac_width !== newState.canvas_params.screen_width) {
+            newState.canvas_params.transform_x -=
+              Math.floor(pointX / 1.1) - pointX;
+            newState.canvas_params.transform_y -=
+              Math.floor(pointY / 1.1) - pointY;
+          }
+
+          break;
+        }
+      }
+      return newState;
+    }
+    case "CANVAS_SCALE_POINT": {
+      let obj = action.payload;
+      let { pointX, pointY } = obj;
+      switch (obj.action) {
+        case "ADD": {
+          let clac_width = Math.min(
+            newState.canvas_params.paper_width * 1.01,
+            1600
+          );
+          let clac_height = Math.min(
+            newState.canvas_params.paper_height * 1.01,
+            1200
+          );
+          newState.canvas_params.paper_width = clac_width;
+          newState.canvas_params.paper_height = clac_height;
+          newState.canvas_params.transform_x +=
+            Math.floor(pointX / 1.01) - pointX;
+          newState.canvas_params.transform_y +=
+            Math.floor(pointY / 1.01) - pointY;
+          break;
+        }
+        case "REDUCE": {
+          let clac_width = Math.max(
+            newState.canvas_params.screen_width,
+            newState.canvas_params.paper_width / 1.01
+          );
+          let clac_height = Math.max(
+            newState.canvas_params.screen_height,
+            newState.canvas_params.paper_height / 1.01
+          );
+          newState.canvas_params.paper_width = clac_width;
+          newState.canvas_params.paper_height = clac_height;
+          if (clac_width !== newState.canvas_params.screen_width) {
+            newState.canvas_params.transform_x -=
+              Math.floor(pointX / 1.01) - pointX;
+            newState.canvas_params.transform_y -=
+              Math.floor(pointY / 1.01) - pointY;
+          }
+
           break;
         }
       }
       return newState;
     }
     case "CANVAS_TRANSFORM": {
-      let { x, y } = action.payload;
-      x *= 0.1;
-      y *= 0.1;
       let {
-        appwidth,
         appheight,
         header_height,
         transform_x,
@@ -210,28 +244,33 @@ export const CanvasReducer = (
         paper_width,
         paper_height,
         screen_width,
-        screen_height,
       } = newState.canvas_params;
-
-      if (x > 0) {
-        newState.canvas_params.transform_x = Math.min(transform_x + x, 0);
-      } else {
+      let { direction } = action.payload;
+      const step = 3;
+      if (direction[0] > 0) {
+        //passive
+        newState.canvas_params.transform_x = Math.min(transform_x + step, 0);
+      } else if (direction[0] < 0) {
+        //negative
         newState.canvas_params.transform_x = Math.max(
-          transform_x + x,
+          transform_x - step,
           screen_width - paper_width
         );
       }
-      if (y > 0) {
+      if (direction[1] > 0) {
+        //passive
         newState.canvas_params.transform_y = Math.min(
-          transform_y + y,
+          transform_y + step,
           (appheight / 2 + header_height) / 2
         );
-      } else {
+      } else if (direction[1] < 0) {
+        //negative
         newState.canvas_params.transform_y = Math.max(
-          transform_y + y,
+          transform_y - step,
           appheight / 2 + header_height - paper_height
         );
       }
+
       return newState;
     }
     default:

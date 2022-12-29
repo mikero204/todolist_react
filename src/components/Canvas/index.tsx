@@ -11,10 +11,13 @@ import { CanvasContext } from "./context/CanvasContext";
 import { CanvasReducer, canvasStateType } from "./context/CanvasReducer";
 import { CANVAS_PARAMS, RESET } from "./Constants";
 import uuid from "react-uuid";
-import { FullGestureState, useGesture } from "@use-gesture/react";
+import {
+  FullGestureState,
+  useGesture,
+  WebKitGestureEvent,
+} from "@use-gesture/react";
 import _ from "lodash";
 function Canvas() {
-  const [custom, setCustom] = useState({ width: 100, height: 100 });
   const ref = useRef(null);
   const bind = useGesture(
     {
@@ -25,17 +28,40 @@ function Canvas() {
     { target: ref }
   );
 
-  const pinch_scale = (state: Omit<FullGestureState<"pinch">, "event">) => {
-    // console.log("pinch ", state);
+  const pinch_scale = (state: any) => {
+    const { x, y } = (state.target as any).getBoundingClientRect();
+    console.log(state);
+    if (state.direction[0] === 1 && state.direction[1] === 1) {
+      dispatch({
+        type: "CANVAS_SCALE_POINT",
+        payload: {
+          action: "ADD",
+          pointX: Math.floor(state.event.x - x),
+          pointY: Math.floor(state.event.y - y),
+        },
+      });
+    } else if (state.direction[0] === -1 && state.direction[1] === -1) {
+      //scale smaller
+      dispatch({
+        type: "CANVAS_SCALE_POINT",
+        payload: {
+          action: "REDUCE",
+          pointX: Math.floor(state.event.x - x),
+          pointY: Math.floor(state.event.y - y),
+        },
+      });
+    }
   };
   const drag = (
     state: Omit<FullGestureState<"drag">, "event"> & {
       event: PointerEvent | MouseEvent | TouchEvent | KeyboardEvent;
     }
   ) => {
-    let x = state.movement[0];
-    let y = state.movement[1];
-    dispatch({ type: "CANVAS_TRANSFORM", payload: { x, y } });
+    console.log(state);
+    if (state.touches < 2 && state.type === "pointermove") {
+      let direction = state.direction;
+      dispatch({ type: "CANVAS_TRANSFORM", payload: { direction } });
+    }
   };
   const wheel_scale = (
     state: Omit<FullGestureState<"wheel">, "event"> & {
@@ -45,14 +71,16 @@ function Canvas() {
     if (!state.active) return;
     if (!state.ctrlKey) return;
     let scaleStatus = state.movement[1] > 0 ? true : false;
+    const { x, y } = (state.target as any).getBoundingClientRect();
+
     if (scaleStatus) {
       //scale smaller
       dispatch({
         type: "CANVAS_SCALE",
         payload: {
-          action: "reduce",
-          pointX: state.event.x,
-          pointY: state.event.y,
+          action: "REDUCE",
+          pointX: Math.floor(state.event.x - x),
+          pointY: Math.floor(state.event.y - y),
         },
       });
     } else {
@@ -60,9 +88,9 @@ function Canvas() {
       dispatch({
         type: "CANVAS_SCALE",
         payload: {
-          action: "add",
-          pointX: state.event.x,
-          pointY: state.event.y,
+          action: "ADD",
+          pointX: Math.floor(state.event.x - x),
+          pointY: Math.floor(state.event.y - y),
         },
       });
     }
@@ -195,20 +223,20 @@ function Canvas() {
           header
         </header>
         <main
+          ref={ref}
           style={{
             width: main_width + "px",
             height: main_height + "px",
             backgroundColor: "#ebecf0",
             position: "relative",
+            touchAction: "none",
           }}
         >
           <div
-            ref={ref}
             style={{
               width: "100%",
               height: "100%",
               padding: paper_padding,
-              touchAction: "none",
             }}
           >
             <div
