@@ -57,7 +57,6 @@ function Canvas() {
       event: PointerEvent | MouseEvent | TouchEvent | KeyboardEvent;
     }
   ) => {
-    console.log(state);
     if (state.touches < 2 && state.type === "pointermove") {
       let direction = state.direction;
       dispatch({ type: "CANVAS_TRANSFORM", payload: { direction } });
