@@ -7,26 +7,75 @@ import {
 } from "react";
 import { useWindowSize } from "./hooks/useWindowSize";
 import CanvasObj from "./CanvasObj";
+import CanvasObj1 from "./CanvasObj1";
 import { CanvasContext } from "./context/CanvasContext";
 import { CanvasReducer, canvasStateType } from "./context/CanvasReducer";
 import { CANVAS_PARAMS, RESET } from "./Constants";
 import uuid from "react-uuid";
 import { FullGestureState, useGesture } from "@use-gesture/react";
+const obj1 = {
+  id: uuid(),
+  name: uuid(),
+  x: 0,
+  y: 0,
+  width: 50,
+  height: 50,
+  zindex: 1,
+  rotate: 0,
+  img: "https://video-public.canva.com/VAFQ9X_oK8g/v/b887464761.gif",
+  active: false,
+  color: "red",
+  lock: false,
+  mouse_event_active: false,
+  tl: [],
+  tr: [],
+  bl: [],
+  br: [],
+};
 
+const initState: canvasStateType = {
+  canvasObj_list: [obj1],
+  canvas_params: {
+    appwidth: 0,
+    appheight: 0,
+    header_width: 0,
+    header_height: 0,
+    main_width: 0,
+    main_height: 0,
+    main_footer_width: 0,
+    main_footer_height: 0,
+    paper_padding: 0,
+    paper_width_rate: 0,
+    paper_height_rate: 0,
+    paper_width: 0,
+    paper_height: 0,
+    scale: 0,
+    transform_x: 0,
+    transform_y: 0,
+    screen_width: 0,
+    screen_height: 0,
+    locker_canvas: false,
+    reduce_paper_size: false,
+    add_paper_size: false,
+  },
+};
 function Canvas() {
+  const [state, dispatch] = useReducer(CanvasReducer, initState);
   const ref = useRef(null);
+  const paper_ref = useRef(null);
   useGesture(
     {
       onPinch: (state) => pinch_scale(state),
       onWheel: (state) => wheel_scale(state),
       onDrag: (state) => drag(state),
     },
-    { target: ref }
+    { target: ref, eventOptions: { capture: false } }
   );
 
   const pinch_scale = (state: any) => {
-    const { x, y } = (state.target as any).getBoundingClientRect();
-
+    const { x, y } = (
+      paper_ref.current! as HTMLDivElement
+    ).getBoundingClientRect();
     if (state.direction[0] === 1 && state.direction[1] === 1) {
       dispatch({
         type: "CANVAS_SCALE_POINT",
@@ -49,13 +98,14 @@ function Canvas() {
     }
   };
   const drag = (
-    state: Omit<FullGestureState<"drag">, "event"> & {
+    stated: Omit<FullGestureState<"drag">, "event"> & {
       event: PointerEvent | MouseEvent | TouchEvent | KeyboardEvent;
     }
   ) => {
-    if (state.down) {
-      let x = state.delta[0];
-      let y = state.delta[1];
+    // console.log(stated);
+    if (stated.down && !state.canvas_params.locker_canvas) {
+      let x = stated.delta[0];
+      let y = stated.delta[1];
       dispatch({ type: "CANVAS_TRANSFORM", payload: { x, y } });
     }
   };
@@ -67,12 +117,15 @@ function Canvas() {
     if (!state.active) return;
     if (!state.ctrlKey) return;
     let scaleStatus = state.movement[1] > 0 ? true : false;
-    const { x, y } = (state.target as any).getBoundingClientRect();
+    const { x, y } = (
+      paper_ref.current! as HTMLDivElement
+    ).getBoundingClientRect();
 
     if (scaleStatus) {
       //scale smaller
+
       dispatch({
-        type: "CANVAS_SCALE",
+        type: "CANVAS_SCALE_POINT",
         payload: {
           action: "REDUCE",
           pointX: Math.floor(state.event.x - x),
@@ -82,7 +135,7 @@ function Canvas() {
     } else {
       //scale larger
       dispatch({
-        type: "CANVAS_SCALE",
+        type: "CANVAS_SCALE_POINT",
         payload: {
           action: "ADD",
           pointX: Math.floor(state.event.x - x),
@@ -92,50 +145,7 @@ function Canvas() {
     }
   };
   const size = useWindowSize();
-  const obj1 = {
-    id: uuid(),
-    name: uuid(),
-    x: 0,
-    y: 0,
-    width: "50",
-    height: "50",
-    zindex: 1,
-    rotate: 0,
-    img: "https://video-public.canva.com/VAFQ9X_oK8g/v/b887464761.gif",
-    active: false,
-    color: "red",
-    lock: false,
-    mouse_event_active: false,
-    tl: {},
-    tr: {},
-    bl: {},
-    br: {},
-  };
-
-  const initState: canvasStateType = {
-    canvasObj_list: [obj1],
-    canvas_params: {
-      appwidth: 0,
-      appheight: 0,
-      header_width: 0,
-      header_height: 0,
-      main_width: 0,
-      main_height: 0,
-      main_footer_width: 0,
-      main_footer_height: 0,
-      paper_padding: 0,
-      rate: 0,
-      paper_width: 0,
-      paper_height: 0,
-      scale: 0,
-      transform_x: 0,
-      transform_y: 0,
-      screen_width: 0,
-      screen_height: 0,
-    },
-  };
-  const [state, dispatch] = useReducer(CanvasReducer, initState);
-
+  // console.log(state.canvas_params.transform_x);
   useEffect(() => {
     const appwidth = size.width;
     const appheight = size.height;
@@ -149,11 +159,13 @@ function Canvas() {
     const rate = 1.333333;
     const paper_width = appwidth - 40;
     const paper_height = paper_width / rate;
-    const scale = 1;
+    const scale = 1.1;
     const transform_x = 0;
     const transform_y = appheight / 2 + header_height - paper_height;
     const screen_width = paper_width;
     const screen_height = paper_height;
+    const paper_width_rate = 1600;
+    const paper_height_rate = 1200;
     dispatch({
       type: CANVAS_PARAMS,
       payload: {
@@ -166,7 +178,8 @@ function Canvas() {
         main_footer_width,
         main_footer_height,
         paper_padding,
-        rate,
+        paper_width_rate,
+        paper_height_rate,
         paper_width,
         paper_height,
         scale,
@@ -188,7 +201,8 @@ function Canvas() {
     main_footer_width,
     main_footer_height,
     paper_padding,
-    rate,
+    paper_width_rate,
+    paper_height_rate,
     paper_width,
     paper_height,
     scale,
@@ -236,14 +250,18 @@ function Canvas() {
             }}
           >
             <div
+              ref={paper_ref}
               style={{
                 backgroundColor: "white",
                 width: paper_width + "px",
                 height: paper_height + "px",
                 transform: `translate(${transform_x}px, ${transform_y}px)`,
+                position: "relative",
               }}
             >
-              <h1>test</h1>
+              {state.canvasObj_list.map((ele) => (
+                <CanvasObj1 key={ele.id} element={ele} />
+              ))}
             </div>
           </div>
           <div
@@ -259,119 +277,6 @@ function Canvas() {
           </div>
         </main>
       </div>
-
-      {/* <div>
-        <div
-          style={{
-            width: state.canvas_params.header_width + "px",
-            height: state.canvas_params.header_height + "px",
-            touchAction: "none",
-          }}
-        >
-          Header
-        </div>
-        <div
-          style={{
-            width: state.canvas_params.appwidth + "px",
-            height:
-              Number(state.canvas_params.appheight) -
-              Number(state.canvas_params.header_height) +
-              "px",
-            display: "flex",
-          }}
-        >
-          <div
-            style={{
-              width: state.canvas_params.tool_view_width + "px",
-              height: state.canvas_params.tool_view_height + "px",
-              touchAction: "none",
-            }}
-          >
-            left
-          </div>
-          <div>
-            <div
-              style={{
-                width: state.canvas_params.canvas_width + "px",
-                height: state.canvas_params.canvas_topheight + "px",
-                touchAction: "none",
-              }}
-            >
-              right
-            </div>
-            <div
-              style={{
-                width: state.canvas_params.canvas_width + "px",
-                height: state.canvas_params.canvas_centerheight + "px",
-              }}
-            >
-              <div
-                {...bind()}
-                ref={ref}
-                style={{
-                  width: state.canvas_params.canvas_width + "px",
-                  height: state.canvas_params.canvas_canva + "px",
-                  position: "relative",
-                  padding: "12px",
-                  backgroundColor: "rgba(43,59,74,0.1)",
-                  overflow: "scroll",
-                  touchAction: "pan-x,pan-y",
-                }}
-              >
-                <div
-                  style={{
-                    width: state.canvas_params.canvas_paper_width + "px",
-                    height: state.canvas_params.canvas_paper_height + "px",
-                    backgroundColor: "white",
-                    position: "relative",
-                    margin: "15px auto",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 800 + "px",
-                      height: 600 + "px",
-                      transform: ` scale(${
-                        state.canvas_params.canvas_scale / 100
-                      })`,
-                      transformOrigin: "0 0",
-                      position: "absolute",
-                      touchAction: "pan-x pan-y",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 800 + "px",
-                        height: 600 + "px",
-                      }}
-                    >
-                      <h1>測試</h1>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div
-                style={{
-                  height: state.canvas_params.canvas_bottomheight + "px",
-                  width: 100 + "%",
-                }}
-              >
-                canvas page select
-              </div>
-            </div>
-            <div
-              style={{
-                width: state.canvas_params.canvas_width + "px",
-                height: state.canvas_params.canvas_bottomheight + "px",
-              }}
-            >
-              {state.canvas_params.canvas_scale}
-              Footer
-            </div>
-          </div>
-        </div>
-      </div> */}
 
       {/* <div
         style={{

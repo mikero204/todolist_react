@@ -28,7 +28,8 @@ type canvas_paramsType = {
   main_footer_width: number;
   main_footer_height: number;
   paper_padding: number;
-  rate: number;
+  paper_width_rate: number;
+  paper_height_rate: number;
   paper_width: number;
   paper_height: number;
   scale: number;
@@ -36,6 +37,9 @@ type canvas_paramsType = {
   transform_y: number;
   screen_width: number;
   screen_height: number;
+  locker_canvas: boolean;
+  add_paper_size: boolean;
+  reduce_paper_size: boolean;
 };
 type canvasActionType = {
   type: string;
@@ -108,8 +112,8 @@ export const CanvasReducer = (
         if (ele.id === id) {
           ele.x = x;
           ele.y = y;
-          ele.width = width.toString();
-          ele.height = height.toString();
+          ele.width = width;
+          ele.height = height;
         }
       });
       return newState;
@@ -147,87 +151,94 @@ export const CanvasReducer = (
       newState.canvas_params = { ...obj };
       return newState;
     }
-    case "CANVAS_SCALE": {
+    case "CANVAS_SCALE_POINT": {
+      let scale = newState.canvas_params.scale;
       let obj = action.payload;
       let { pointX, pointY } = obj;
       switch (obj.action) {
         case "ADD": {
           let clac_width = Math.min(
-            newState.canvas_params.paper_width * 1.1,
-            1600
+            newState.canvas_params.paper_width * scale,
+            newState.canvas_params.paper_width_rate
           );
           let clac_height = Math.min(
-            newState.canvas_params.paper_height * 1.1,
-            1200
+            newState.canvas_params.paper_height * scale,
+            newState.canvas_params.paper_height_rate
           );
+          newState.canvas_params.reduce_paper_size = false;
           newState.canvas_params.paper_width = clac_width;
           newState.canvas_params.paper_height = clac_height;
-          newState.canvas_params.transform_x +=
-            Math.floor(pointX / 1.1) - pointX;
-          newState.canvas_params.transform_y +=
-            Math.floor(pointY / 1.1) - pointY;
-          break;
-        }
-        case "REDUCE": {
-          let clac_width = Math.max(
-            newState.canvas_params.screen_width,
-            newState.canvas_params.paper_width / 1.1
-          );
-          let clac_height = Math.max(
-            newState.canvas_params.screen_height,
-            newState.canvas_params.paper_height / 1.1
-          );
-          newState.canvas_params.paper_width = clac_width;
-          newState.canvas_params.paper_height = clac_height;
-          if (clac_width !== newState.canvas_params.screen_width) {
-            newState.canvas_params.transform_x -=
-              Math.floor(pointX / 1.1) - pointX;
-            newState.canvas_params.transform_y -=
-              Math.floor(pointY / 1.1) - pointY;
+          if (clac_width !== newState.canvas_params.paper_width_rate) {
+            newState.canvas_params.transform_x +=
+              Math.floor(pointX / scale) - pointX;
+            newState.canvas_params.transform_y +=
+              Math.floor(pointY / scale) - pointY;
+            newState.canvasObj_list.forEach((ele) => {
+              ele.x *= newState.canvas_params.scale;
+              ele.y *= newState.canvas_params.scale;
+              ele.width *= newState.canvas_params.scale;
+              ele.height *= newState.canvas_params.scale;
+            });
+          }
+          if (
+            clac_width === newState.canvas_params.paper_width_rate &&
+            !newState.canvas_params.add_paper_size
+          ) {
+            newState.canvas_params.transform_x +=
+              Math.floor(pointX / scale) - pointX;
+            newState.canvas_params.transform_y +=
+              Math.floor(pointY / scale) - pointY;
+            newState.canvasObj_list.forEach((ele) => {
+              ele.x *= newState.canvas_params.scale;
+              ele.y *= newState.canvas_params.scale;
+              ele.width *= newState.canvas_params.scale;
+              ele.height *= newState.canvas_params.scale;
+            });
+            newState.canvas_params.add_paper_size = true;
           }
 
           break;
         }
-      }
-      return newState;
-    }
-    case "CANVAS_SCALE_POINT": {
-      let obj = action.payload;
-      let { pointX, pointY } = obj;
-      switch (obj.action) {
-        case "ADD": {
-          let clac_width = Math.min(
-            newState.canvas_params.paper_width * 1.01,
-            1600
-          );
-          let clac_height = Math.min(
-            newState.canvas_params.paper_height * 1.01,
-            1200
-          );
-          newState.canvas_params.paper_width = clac_width;
-          newState.canvas_params.paper_height = clac_height;
-          newState.canvas_params.transform_x +=
-            Math.floor(pointX / 1.01) - pointX;
-          newState.canvas_params.transform_y +=
-            Math.floor(pointY / 1.01) - pointY;
-          break;
-        }
         case "REDUCE": {
           let clac_width = Math.max(
             newState.canvas_params.screen_width,
-            newState.canvas_params.paper_width / 1.01
+            newState.canvas_params.paper_width / scale
           );
           let clac_height = Math.max(
             newState.canvas_params.screen_height,
-            newState.canvas_params.paper_height / 1.01
+            newState.canvas_params.paper_height / scale
           );
+          newState.canvas_params.add_paper_size = false;
           newState.canvas_params.paper_width = clac_width;
           newState.canvas_params.paper_height = clac_height;
           if (clac_width !== newState.canvas_params.screen_width) {
             newState.canvas_params.transform_x -=
-              Math.floor(pointX / 1.01) - pointX;
+              Math.floor(pointX / scale) - pointX;
             newState.canvas_params.transform_y -=
-              Math.floor(pointY / 1.01) - pointY;
+              Math.floor(pointY / scale) - pointY;
+            newState.canvasObj_list.forEach((ele) => {
+              ele.x /= newState.canvas_params.scale;
+              ele.y /= newState.canvas_params.scale;
+              ele.width /= newState.canvas_params.scale;
+              ele.height /= newState.canvas_params.scale;
+            });
+          }
+          if (
+            clac_width === newState.canvas_params.screen_width &&
+            !newState.canvas_params.reduce_paper_size
+          ) {
+            newState.canvas_params.transform_x = 0;
+            newState.canvas_params.transform_y =
+              newState.canvas_params.appheight / 2 +
+              newState.canvas_params.header_height -
+              newState.canvas_params.paper_height;
+            newState.canvasObj_list.forEach((ele) => {
+              ele.x /= newState.canvas_params.scale;
+              ele.y /= newState.canvas_params.scale;
+              ele.width /= newState.canvas_params.scale;
+              ele.height /= newState.canvas_params.scale;
+            });
+            newState.canvas_params.reduce_paper_size = true;
           }
 
           break;
@@ -270,6 +281,10 @@ export const CanvasReducer = (
           appheight / 2 + header_height - paper_height
         );
       }
+      return newState;
+    }
+    case "LOCKER_CANVAS": {
+      newState.canvas_params.locker_canvas = action.payload;
       return newState;
     }
     default:

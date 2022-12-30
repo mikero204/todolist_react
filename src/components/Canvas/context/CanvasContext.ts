@@ -14,8 +14,8 @@ export type canvasObj = {
   name: string;
   x: number;
   y: number;
-  width: string;
-  height: string;
+  width: number;
+  height: number;
   zindex: number;
   rotate: number;
   img: string;
